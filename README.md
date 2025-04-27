@@ -55,7 +55,7 @@ Siga estes passos para configurar e executar a aplicação localmente.
 
 1.  **Clone o Repositório:**
     ```bash
-    git clone <URL_DO_SEU_REPOSITORIO>
+    git clone https://github.com/conectis360/seekernaut-api.git
     cd seekernaut-api
     ```
     *(Substitua `<URL_DO_SEU_REPOSITORIO>` pela URL real do seu projeto no GitHub)*
