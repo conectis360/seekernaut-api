@@ -58,7 +58,6 @@ Siga estes passos para configurar e executar a aplicação localmente.
     git clone https://github.com/conectis360/seekernaut-api.git
     cd seekernaut-api
     ```
-    *(Substitua `<URL_DO_SEU_REPOSITORIO>` pela URL real do seu projeto no GitHub)*
 
 2.  **Configure as Variáveis de Ambiente/Aplicação:**
     * Edite os arquivos `application.yml` (padrão), `application-hml.yml` (desenvolvimento) e `application-prd.yml` (produção) conforme necessário.
