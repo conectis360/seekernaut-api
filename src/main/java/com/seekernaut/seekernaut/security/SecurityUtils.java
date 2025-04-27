@@ -3,6 +3,7 @@ package com.seekernaut.seekernaut.security;
 
 import com.seekernaut.seekernaut.components.Messages;
 import com.seekernaut.seekernaut.domain.user.repository.UsuarioRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;

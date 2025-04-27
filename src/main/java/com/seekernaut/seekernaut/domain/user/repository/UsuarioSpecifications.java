@@ -1,5 +1,6 @@
 package com.seekernaut.seekernaut.domain.user.repository;
 
+import com.seekernaut.seekernaut.api.usuario.dto.UsuarioFilterDto;
 import com.seekernaut.seekernaut.domain.user.model.Usuario;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
@@ -12,7 +13,7 @@ import java.util.List;
 
 public class UsuarioSpecifications { // Criei uma classe para a Specification
 
-    public static Specification<Usuario> usuarioFilter() {
+    public static Specification<Usuario> usuarioFilter(UsuarioFilterDto usuarioFilterDto) {
         return (Root<Usuario> root, CriteriaQuery<?> query, CriteriaBuilder builder) -> {
             List<Predicate> predicates = new ArrayList<>();
 

@@ -3,6 +3,7 @@ package com.seekernaut.seekernaut.exception;
 import com.seekernaut.seekernaut.components.Messages;
 import com.seekernaut.seekernaut.exception.exceptions.BusinessException;
 import jakarta.validation.ConstraintViolation;
+import lombok.RequiredArgsConstructor;
 import org.hibernate.exception.ConstraintViolationException;
 import org.hibernate.exception.JDBCConnectionException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +35,7 @@ import java.util.Set;
  * Utiliza {@link MessageSource} para internacionalização de mensagens de erro e um componente {@link Messages} customizado.
  */
 @ControllerAdvice
+@RequiredArgsConstructor
 public class CommonsExceptionHandler extends ResponseEntityExceptionHandler {
 
     /**
@@ -50,18 +52,6 @@ public class CommonsExceptionHandler extends ResponseEntityExceptionHandler {
      * Bean injetado para acessar mensagens customizadas da aplicação.
      */
     private final Messages messages;
-
-    /**
-     * Construtor com injeção de dependências para {@link MessageSource} e {@link Messages}.
-     *
-     * @param messageSource {@link MessageSource} para obter mensagens internacionalizadas.
-     * @param messages      {@link Messages} para obter mensagens customizadas.
-     */
-    @Autowired
-    public CommonsExceptionHandler(MessageSource messageSource, Messages messages) {
-        this.messageSource = messageSource;
-        this.messages = messages;
-    }
 
     /**
      * Trata exceções genéricas não tratadas especificamente.
