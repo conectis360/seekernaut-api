@@ -70,11 +70,11 @@ public class UsuarioService {
         }
     }
 
-    public void registrarUsuario(Usuario usuario) {
+    public Usuario registrarUsuario(Usuario usuario) {
         log.debug("into registrarUsuario method");
         this.retornaUsuarioRegistrado(usuario);
         Usuario user = new Usuario(usuario.getUsuario(), usuario.getEmail(), encoder.encode(usuario.getSenha()));
-        usuarioRepository.save(user);
+        return usuarioRepository.save(user);
     }
 
 

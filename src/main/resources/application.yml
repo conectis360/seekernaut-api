@@ -40,7 +40,7 @@ spring:
 
 seekernaut:
   app:
-    jwtSecret: IfMeTSeCrETKeY5428199521 # Segredo JWT padrão
+    jwtSecret: 7YTJDm7ctZQ6SkEEiAU9X0q3yXTBhe5nPhwuOK2APiOZ9cSgm972VU2qcLc2wI0AUYtQy8ESrjqTyKUaJRYdHw==
     jwtExpirationMs: 86400000 # Expiração JWT padrão
 
 logging:

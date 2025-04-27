@@ -18,32 +18,27 @@ import org.springframework.web.bind.annotation.*;
 public interface UserApi {
 
     @Operation(summary = "Listar Status", description = "Listar todos Status")
-    @PreAuthorize("@securityService.hasPermission('usuarioApi_findAll')")
     @ResponseStatus(HttpStatus.OK)
     @GetMapping(produces = {MediaType.APPLICATION_JSON_VALUE})
     DefaultPaginationResponse<UsuarioDTO> findAll(@ParameterObject DefaultRequestParams requestParams,
                                                   @ParameterObject UsuarioFilterDto filter);
 
     @Operation(summary = "Listar usuario por id", description = "Listar usuario por id")
-    @PreAuthorize("@securityService.hasPermission('usuarioApi_findById')")
     @ResponseStatus(HttpStatus.OK)
     @GetMapping(value = "/{usuarioId}", produces = {MediaType.APPLICATION_JSON_VALUE})
     UsuarioDTO findById(@PathVariable Long usuarioId);
 
     @Operation(summary = "Inserir novo usuario", description = "Inserir novo usuario")
-    @PreAuthorize("@securityService.hasPermission('usuarioApi_insert')")
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping(produces = {MediaType.APPLICATION_JSON_VALUE})
     UsuarioDTO insert(@RequestBody @Validated UsuarioDTO usuarioDTO);
 
     @Operation(summary = "Atualizar usuario", description = "Atualizar usuario")
-    @PreAuthorize("@securityService.hasPermission('usuarioApi_update')")
     @ResponseStatus(HttpStatus.OK)
     @PutMapping(value = "/{usuarioId}", produces = {MediaType.APPLICATION_JSON_VALUE})
     UsuarioDTO update(@PathVariable Long usuarioId, @RequestBody @Validated UsuarioDTO usuarioDTO);
 
     @Operation(summary = "Deletar usuario", description = "Deletar usuario por id")
-    @PreAuthorize("@securityService.hasPermission('usuarioApi_delete')")
     @ResponseStatus(HttpStatus.OK)
     @DeleteMapping(value = "/{codigoUsuario}")
     void delete(@PathVariable Long codigoUsuario);

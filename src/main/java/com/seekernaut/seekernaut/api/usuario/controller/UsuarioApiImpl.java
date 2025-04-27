@@ -32,7 +32,7 @@ public class UsuarioApiImpl implements UserApi {
 
     @Override
     public UsuarioDTO insert(UsuarioDTO usuarioDTO) {
-        return null;
+        return usuarioMapper.toDto(usuarioService.registrarUsuario(usuarioMapper.toEntity(usuarioDTO)));
     }
 
     @Override
