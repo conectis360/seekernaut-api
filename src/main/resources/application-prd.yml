@@ -1,0 +1,17 @@
+spring:
+  config:
+    activate:
+      on-profile: prd # Ativa este profile quando 'prd' estiver ativo
+  datasource:
+    url: jdbc:postgresql://producao:5432/Seekernaut_prd # URL específico para Produção
+    username: postgresql_prd
+    password: postgresql_prd
+  data:
+    mongodb:
+      uri: "mongodb://producao:27017/seekernaut_logs_prd" # URI específico para Produção
+  jpa:
+    hibernate:
+      ddl-auto: validate # Em produção, é comum validar o schema em vez de atualizar
+logging:
+  level:
+    com.seekernaut: WARN # Nível de log mais restrito em Produção

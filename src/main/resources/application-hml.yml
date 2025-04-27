@@ -1,0 +1,14 @@
+spring:
+  config:
+    activate:
+      on-profile: hml # Ativa este profile quando 'hml' estiver ativo
+  datasource:
+    url: jdbc:postgresql://localhost:9099/Seekernaut # URL específico para HML
+    username: postgresql
+    password: postgresql
+  data:
+    mongodb:
+      uri: "mongodb://localhost:27017/seekernaut_logs_hml" # URI específico para HML
+logging:
+  level:
+    com.seekernaut: DEBUG # Nível de log mais detalhado em HML

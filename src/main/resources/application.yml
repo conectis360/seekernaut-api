@@ -1,0 +1,58 @@
+server:
+  port: 9001
+
+spring:
+  main:
+    banner-mode: off
+  application:
+    name: Seekernaut
+    description: API for AI Chat Interface
+    version: 0.1
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+  jpa:
+    properties:
+      hibernate:
+        jdbc:
+          lob:
+            non_contextual_creation: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update
+  datasource:
+    initialization-mode: always
+    platform: postgres
+    url: jdbc:postgresql://localhost:9099/Seekernaut # URL padrão - pode ser sobrescrita nos profiles
+    username: postgresql # Usuário padrão - pode ser sobrescrito nos profiles
+    password: postgresql # Senha padrão - pode ser sobrescrita nos profiles
+  data:
+    mongodb:
+      uri: "mongodb://localhost:27017/seekernaut_logs" # URI padrão - pode ser sobrescrita nos profiles
+  session:
+    store-type: jdbc # Configuração padrão para session store
+  kafka:
+    bootstrap-servers: localhost:9092 # Endereços Kafka padrão
+  webflux:
+    client:
+      connect-timeout: PT5S
+      response-timeout: PT10S
+
+seekernaut:
+  app:
+    jwtSecret: IfMeTSeCrETKeY5428199521 # Segredo JWT padrão
+    jwtExpirationMs: 86400000 # Expiração JWT padrão
+
+logging:
+  level:
+    root: INFO
+    com.seekernaut: INFO # Nível de log padrão para sua aplicação
+    org:
+      springframework: INFO
+      hibernate:
+        SQL: INFO
+        type:
+          descriptor:
+            sql:
+              BasicBinder: INFO
+
