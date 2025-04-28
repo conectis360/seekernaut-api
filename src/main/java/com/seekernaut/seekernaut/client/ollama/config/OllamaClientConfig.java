@@ -22,7 +22,7 @@ import java.util.List;
 @Configuration
 public class OllamaClientConfig {
 
-    @Value("${application.client.logger-level}")
+    @Value("BASIC")
     private String loggerLevel;
 
     private final Messages messages;

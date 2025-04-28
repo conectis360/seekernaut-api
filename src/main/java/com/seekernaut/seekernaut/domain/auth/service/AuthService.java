@@ -3,7 +3,7 @@ package com.seekernaut.seekernaut.domain.auth.service;
 import com.seekernaut.seekernaut.api.auth.dto.LoginDTO;
 import com.seekernaut.seekernaut.components.Messages;
 import com.seekernaut.seekernaut.domain.user.model.User;
-import com.seekernaut.seekernaut.exception.exceptions.BusinessException;
+import com.seekernaut.seekernaut.exception.BusinessException;
 import com.seekernaut.seekernaut.response.JwtResponse;
 import com.seekernaut.seekernaut.security.JwtUtils;
 import lombok.RequiredArgsConstructor;

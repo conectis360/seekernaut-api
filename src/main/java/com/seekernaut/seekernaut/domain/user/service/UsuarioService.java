@@ -10,7 +10,7 @@ import com.seekernaut.seekernaut.domain.user.model.Usuario;
 import com.seekernaut.seekernaut.domain.user.repository.TipoUsuarioRepository;
 import com.seekernaut.seekernaut.domain.user.repository.UsuarioRepository;
 import com.seekernaut.seekernaut.domain.user.repository.UsuarioSpecifications;
-import com.seekernaut.seekernaut.exception.exceptions.BusinessException;
+import com.seekernaut.seekernaut.exception.BusinessException;
 import com.seekernaut.seekernaut.response.DefaultPaginationResponse;
 import com.seekernaut.seekernaut.response.DefaultRequestParams;
 import com.seekernaut.seekernaut.utils.PageRequestHelper;

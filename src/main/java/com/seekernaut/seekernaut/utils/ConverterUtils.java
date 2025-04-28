@@ -3,7 +3,7 @@ package com.seekernaut.seekernaut.utils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.seekernaut.seekernaut.exception.exceptions.ValidationException;
+import com.seekernaut.seekernaut.exception.ValidationException;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;

@@ -1,6 +1,6 @@
 package com.seekernaut.seekernaut.response;
 
-import com.seekernaut.seekernaut.exception.exceptions.ValidationException;
+import com.seekernaut.seekernaut.exception.ValidationException;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

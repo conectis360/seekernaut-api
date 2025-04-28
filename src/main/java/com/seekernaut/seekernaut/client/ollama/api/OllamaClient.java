@@ -1,18 +1,18 @@
 package com.seekernaut.seekernaut.client.ollama.api;
 
+import com.seekernaut.seekernaut.api.ollama.dto.ModelListDto;
+import com.seekernaut.seekernaut.api.ollama.dto.OllamaModelInfoDTO;
 import com.seekernaut.seekernaut.client.ollama.config.OllamaClientConfig;
+import feign.Headers;
 import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.web.bind.annotation.GetMapping;
 
-@FeignClient(name = "ollamaClient", configuration = OllamaClientConfig.class, url = "${application.client.ollama-api}")
+import java.util.List;
+
+@FeignClient(name = "ollamaClient", configuration = OllamaClientConfig.class, url = "http://localhost:11434/")
 public interface OllamaClient {
-    /*
-    @Headers("Content-Type: application/json")
-    @PostMapping("/v1/historico-log-sistema")
-    Long insert(@RequestBody HistoricoLogSistemaDto log);
 
     @Headers("Content-Type: application/json")
-    @PutMapping("/v1/historico-log-sistema")
-    void update(@RequestBody HistoricoLogSistemaDto log);
-     */
-
+    @GetMapping("/api/tags")
+    ModelListDto listModels();
 }

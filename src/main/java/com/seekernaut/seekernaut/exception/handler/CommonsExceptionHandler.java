@@ -115,13 +115,6 @@ public class CommonsExceptionHandler extends ResponseEntityExceptionHandler {
         return this.handleExceptionInternal(ex, erro, new HttpHeaders(), HttpStatus.UNAUTHORIZED, request);
     }
 
-    @ExceptionHandler({AccessDeniedException.class})
-    public ResponseEntity<Object> handleAccessDeniedException(AccessDeniedException ex, WebRequest request) {
-        Erro erro = new Erro();
-        erro.getMensagens().add(messages.get("acesso.negado"));
-        return this.handleExceptionInternal(ex, erro, new HttpHeaders(), HttpStatus.UNAUTHORIZED, request);
-    }
-
     @ExceptionHandler({ResponseStatusException.class})
     public ResponseEntity<Object> handleResponseStatusException(ResponseStatusException ex, WebRequest request) {
         Erro erro = new Erro();
