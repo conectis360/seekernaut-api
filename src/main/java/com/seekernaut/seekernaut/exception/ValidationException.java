@@ -1,4 +1,4 @@
-package com.seekernaut.seekernaut.exception.exceptions;
+package com.seekernaut.seekernaut.exception;
 
 import java.util.Arrays;
 import java.util.List;
