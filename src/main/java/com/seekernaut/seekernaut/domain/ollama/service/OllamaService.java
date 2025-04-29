@@ -1,13 +1,10 @@
 package com.seekernaut.seekernaut.domain.ollama.service;
 
 import com.seekernaut.seekernaut.api.ollama.dto.ModelListDto;
-import com.seekernaut.seekernaut.api.ollama.dto.OllamaModelInfoDTO;
 import com.seekernaut.seekernaut.client.ollama.api.OllamaClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Slf4j
 @Service

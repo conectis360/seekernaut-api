@@ -56,3 +56,5 @@ logging:
             sql:
               BasicBinder: INFO
 
+ollama:
+  base-url: http://localhost:11434/
