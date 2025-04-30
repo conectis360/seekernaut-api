@@ -1,21 +1,21 @@
 package com.seekernaut.seekernaut.domain.ollama.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.seekernaut.seekernaut.api.ollamastreaming.dto.OllamaChatRequestDto;
 import com.seekernaut.seekernaut.api.ollamastreaming.dto.OllamaChatResponseDto;
+import com.seekernaut.seekernaut.client.ollama.webclient.OllamaChatApiClient;
+import com.seekernaut.seekernaut.domain.messages.model.Message;
+import com.seekernaut.seekernaut.domain.messages.repository.MessageRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.buffer.DataBuffer;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.time.Duration;
-import java.util.Arrays;
+import java.time.OffsetDateTime;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -28,8 +28,8 @@ import java.util.concurrent.atomic.AtomicReference;
 @RequiredArgsConstructor
 public class OllamaChatServiceStreaming {
 
-    private final WebClient ollamaWebClient;
-    private final ObjectMapper objectMapper;
+    private final OllamaChatApiClient ollamaChatApiClient;
+    private final MessageRepository messageRepository;
 
     /**
      * Utilizado para armazenar temporariamente a parte de uma linha JSON incompleta
@@ -39,50 +39,79 @@ public class OllamaChatServiceStreaming {
     private final AtomicReference<String> incompleteLine = new AtomicReference<>("");
 
     /**
-     * <p>Envia uma requisição de chat para a API do Ollama e retorna um fluxo da resposta.</p>
-     * <p>Este método configura o {@link WebClient} para enviar uma requisição POST assíncrona
-     * para o endpoint `/chat` e processa a resposta como um fluxo de eventos JSON, onde cada evento
-     * é desserializado para um {@link OllamaChatResponseDto}.</p>
+     * <p>Persiste a mensagem do usuário no banco de dados.</p>
      *
-     * @param request {@link OllamaChatRequestDto} contendo os detalhes da conversa e os parâmetros de geração.
-     * @return {@link Flux} de {@link OllamaChatResponseDto}, representando a stream da resposta do chat do Ollama.
-     * Se o Ollama não enviar a resposta em stream, o Flux conterá um único evento com a resposta completa.
+     * @param conversationId {@link UUID} identificador da conversa.
+     * @param content        O conteúdo da mensagem do usuário.
+     * @return {@link Mono} de {@link Message} representando a mensagem persistida.
      */
-    public Flux<OllamaChatResponseDto> getChatCompletionStream(OllamaChatRequestDto request) {
-        return ollamaWebClient.post()
-                .uri("/chat")
-                .contentType(MediaType.APPLICATION_JSON) // Define o tipo de conteúdo da requisição como JSON
-                .accept(MediaType.TEXT_EVENT_STREAM) // Define o tipo de mídia esperado na resposta como um fluxo de eventos de texto
-                .body(Mono.just(request), OllamaChatRequestDto.class) // Define o corpo da requisição como o objeto DTO convertido para um Mono
-                .retrieve() // Realiza a requisição HTTP e obtém a resposta como um objeto de resposta do WebClient
-                .bodyToFlux(DataBuffer.class) // Extrai o corpo da resposta como um Flux de DataBuffer (pedaços de dados binários)
-                .flatMap(dataBuffer -> {
-                    byte[] bytes = new byte[dataBuffer.readableByteCount()];
-                    dataBuffer.read(bytes);
-                    String content = new String(bytes, StandardCharsets.UTF_8);
-                    String currentBuffer = incompleteLine.get() + content;
-                    String[] lines = currentBuffer.split("\\n");
-                    incompleteLine.set(""); // Limpa o buffer de linha incompleta
+    private Mono<Message> persistUserMessage(UUID conversationId, String content) {
+        return Mono.fromCallable(() -> {
+            Message userMessage = Message.builder()
+                    .conversationId(conversationId)
+                    .senderType("user")
+                    .content(content)
+                    .sentAt(OffsetDateTime.now())
+                    .build();
+            return messageRepository.save(userMessage);
+        }).subscribeOn(Schedulers.boundedElastic());
+    }
 
-                    // Se a última linha não parece ser um JSON completo, armazena para a próxima iteração
-                    if (lines.length > 0 && !lines[lines.length - 1].trim().isEmpty() && !lines[lines.length - 1].trim().endsWith("}")) {
-                        incompleteLine.set(lines[lines.length - 1]);
-                        lines = Arrays.copyOf(lines, lines.length - 1);
+    /**
+     * <p>Persiste a resposta completa do modelo no banco de dados.</p>
+     *
+     * @param conversationId {@link UUID} identificador da conversa.
+     * @param fullResponse   O conteúdo completo da resposta do modelo.
+     * @return {@link Mono} de {@link Message} representando a mensagem persistida.
+     */
+    private Mono<Message> persistModelResponse(UUID conversationId, String fullResponse) {
+        return Mono.fromCallable(() -> {
+            Message modelMessage = Message.builder()
+                    .conversationId(conversationId)
+                    .senderType("model")
+                    .content(fullResponse)
+                    .sentAt(OffsetDateTime.now())
+                    .build();
+            return messageRepository.save(modelMessage);
+        }).subscribeOn(Schedulers.boundedElastic());
+    }
+
+    /**
+     * <p>Envia uma requisição de chat para a API do Ollama, persiste a mensagem do usuário
+     * e a resposta completa do modelo (após a conclusão da stream), retornando um fluxo
+     * da resposta para o cliente.</p>
+     * <p>Este método realiza uma única chamada ao Ollama e utiliza operadores reativos
+     * para processar a stream e persistir os dados.</p>
+     *
+     * @param conversationId {@link UUID} identificador da conversa.
+     * @param request        {@link OllamaChatRequestDto} contendo os detalhes da conversa e os parâmetros de geração.
+     * @return {@link Flux} de {@link OllamaChatResponseDto}, representando a stream da resposta do chat do Ollama.
+     * O salvamento da resposta do modelo ocorre como um efeito colateral após a conclusão do fluxo.
+     */
+    public Flux<OllamaChatResponseDto> getChatCompletionAndPersist(UUID conversationId, OllamaChatRequestDto request) {
+        Mono<Message> savedUserMessage = Mono.justOrEmpty(request.getMessages().stream().filter(message -> "user".equals(message.getRole())).findFirst())
+                .flatMap(userMessageDto -> persistUserMessage(conversationId, userMessageDto.getContent()))
+                .onErrorResume(e -> {
+                    log.error("Erro ao persistir mensagem do usuário: {}", e.getMessage());
+                    return Mono.empty();
+                });
+
+        AtomicReference<StringBuilder> fullResponseBuilder = new AtomicReference<>(new StringBuilder());
+        Flux<OllamaChatResponseDto> ollamaResponseFlux = ollamaChatApiClient.chatStream(request)
+                .doOnNext(responseDto -> {
+                    if (responseDto != null && responseDto.getResponse() != null) {
+                        fullResponseBuilder.get().append(responseDto.getResponse());
                     }
+                });
 
-                    return Flux.fromArray(lines)
-                            .filter(line -> !line.trim().isEmpty()) // Filtra linhas vazias
-                            .map(line -> {
-                                try {
-                                    // Tenta desserializar a linha JSON para um objeto OllamaChatResponseDto
-                                    return objectMapper.readValue(line, OllamaChatResponseDto.class);
-                                } catch (IOException e) {
-                                    System.err.println("Erro ao desserializar linha da stream de chat: " + e.getMessage());
-                                    return null; // Sinaliza um erro de desserialização
-                                }
-                            })
-                            .filter(dto -> dto != null); // Filtra os objetos DTO que foram desserializados com sucesso (não nulos)
-                })
-                .timeout(Duration.ofMinutes(5)); // Define um timeout para a stream completa de 5 minutos
+        ollamaResponseFlux.doOnComplete(() -> {
+            persistModelResponse(conversationId, fullResponseBuilder.get().toString())
+                    .subscribe(); // Inicia a operação de persistência da resposta do modelo
+        }).subscribe(); // Inicia a subscrição do Flux do Ollama
+
+        // Trigger the user message persistence
+        savedUserMessage.subscribe();
+
+        return ollamaResponseFlux;
     }
 }
