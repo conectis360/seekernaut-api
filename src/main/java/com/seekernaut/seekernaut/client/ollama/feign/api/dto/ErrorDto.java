@@ -1,4 +1,4 @@
-package com.seekernaut.seekernaut.client.ollama.api.dto;
+package com.seekernaut.seekernaut.client.ollama.feign.api.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;

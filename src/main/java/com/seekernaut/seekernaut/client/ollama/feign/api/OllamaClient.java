@@ -1,9 +1,9 @@
-package com.seekernaut.seekernaut.client.ollama.api;
+package com.seekernaut.seekernaut.client.ollama.feign.api;
 
 import com.seekernaut.seekernaut.api.ollama.dto.ModelListDto;
 import com.seekernaut.seekernaut.api.ollama.dto.OllamaGenerateRequestDto;
 import com.seekernaut.seekernaut.api.ollama.dto.OllamaGenerateResponseDto;
-import com.seekernaut.seekernaut.client.ollama.config.OllamaClientConfig;
+import com.seekernaut.seekernaut.client.ollama.feign.config.OllamaClientConfig;
 import feign.Headers;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;

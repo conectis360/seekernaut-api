@@ -1,6 +1,6 @@
-package com.seekernaut.seekernaut.client.ollama.config;
+package com.seekernaut.seekernaut.client.ollama.feign.config;
 
-import com.seekernaut.seekernaut.client.ollama.api.dto.ErrorDto;
+import com.seekernaut.seekernaut.client.ollama.feign.api.dto.ErrorDto;
 import com.seekernaut.seekernaut.components.Messages;
 import com.seekernaut.seekernaut.exception.CommunicationException;
 import com.seekernaut.seekernaut.utils.ConverterUtils;

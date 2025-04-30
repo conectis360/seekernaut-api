@@ -1,4 +1,4 @@
-package com.seekernaut.seekernaut.client.ollama.api.mapper;
+package com.seekernaut.seekernaut.client.ollama.feign.api.mapper;
 
 import com.seekernaut.seekernaut.mapper.BeanMapper;
 import org.mapstruct.Mapper;
