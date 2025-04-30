@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Tag(name = "Status")
@@ -23,6 +24,6 @@ public interface OllamaApi {
     @Operation(summary = "Generate Completion", description = "Send a prompt to the specified model and return the answer ")
     @ResponseStatus(HttpStatus.OK)
     @PostMapping(value = "/generate-completion", consumes = {MediaType.APPLICATION_JSON_VALUE}, produces = {MediaType.APPLICATION_JSON_VALUE})
-    Mono<OllamaGenerateResponseDto> generateCompletion(@RequestBody @Validated OllamaGenerateRequestDto body);
+    Flux<OllamaGenerateResponseDto> generateCompletion(@RequestBody @Validated OllamaGenerateRequestDto body);
 
 }

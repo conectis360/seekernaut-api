@@ -9,6 +9,7 @@ import com.seekernaut.seekernaut.domain.ollama.service.OllamaService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
@@ -26,7 +27,7 @@ public class OllamaApiImpl implements OllamaApi {
     }
 
     @Override
-    public Mono<OllamaGenerateResponseDto> generateCompletion(OllamaGenerateRequestDto body) {
+    public Flux<OllamaGenerateResponseDto> generateCompletion(OllamaGenerateRequestDto body) {
         return ollamaService.generateCompletion(body);
     }
 
