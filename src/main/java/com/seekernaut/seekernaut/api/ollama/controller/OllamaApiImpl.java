@@ -2,6 +2,8 @@ package com.seekernaut.seekernaut.api.ollama.controller;
 
 
 import com.seekernaut.seekernaut.api.ollama.dto.ModelListDto;
+import com.seekernaut.seekernaut.api.ollama.dto.OllamaGenerateRequestDto;
+import com.seekernaut.seekernaut.api.ollama.dto.OllamaGenerateResponseDto;
 import com.seekernaut.seekernaut.api.ollama.dto.OllamaModelInfoDTO;
 import com.seekernaut.seekernaut.domain.ollama.service.OllamaService;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +22,11 @@ public class OllamaApiImpl implements OllamaApi {
     @Override
     public ModelListDto listModels() {
         return ollamaService.listModels();
+    }
+
+    @Override
+    public OllamaGenerateResponseDto generateCompletion(OllamaGenerateRequestDto body) {
+        return ollamaService.generateCompletion(body);
     }
 
 
