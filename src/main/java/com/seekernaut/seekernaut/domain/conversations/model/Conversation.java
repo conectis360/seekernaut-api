@@ -17,6 +17,8 @@ import java.util.UUID;
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Entity
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Table(name = "conversations")
 public class Conversation {
 
@@ -27,9 +29,6 @@ public class Conversation {
     @EqualsAndHashCode.Include
     private UUID conversationId;
 
-    @Column(name = "user_id")
-    private Integer userId;
-
     @Column(name = "started_at")
     private OffsetDateTime startedAt = OffsetDateTime.now();
 
@@ -37,20 +36,6 @@ public class Conversation {
     private String title;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", referencedColumnName = "id", insertable = false, updatable = false)
+    @JoinColumn(name = "user_id", referencedColumnName = "id", updatable = false)
     private Usuario user;
-
-    public Conversation(Integer userId, String title) {
-        this.userId = userId;
-        this.title = title;
-    }
-
-    @Builder
-    public Conversation(UUID conversationId, Integer userId, OffsetDateTime startedAt, String title, Usuario user) {
-        this.conversationId = conversationId;
-        this.userId = userId;
-        this.startedAt = startedAt;
-        this.title = title;
-        this.user = user;
-    }
 }

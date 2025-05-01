@@ -4,6 +4,7 @@ import com.seekernaut.seekernaut.domain.user.service.UserService;
 import com.seekernaut.seekernaut.security.AuthEntryPointJwt;
 import com.seekernaut.seekernaut.security.AuthTokenFilter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -11,6 +12,7 @@ import org.springframework.security.authentication.dao.DaoAuthenticationProvider
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -24,13 +26,17 @@ import java.util.Arrays;
 import java.util.List;
 
 @Configuration
-@EnableMethodSecurity
-@RequiredArgsConstructor
+@EnableWebSecurity
 public class WebSecurityConfig { // Renomeei a classe para seguir a convenção
 
-    private final AuthEntryPointJwt unauthorizedHandler;
+    @Autowired
+    private AuthEntryPointJwt unauthorizedHandler;
 
-    private final UserService userDetailsService; // Assumindo que você tem um UserDetailsService
+    @Autowired
+    private UserService userDetailsService; // Assumindo que você tem um UserDetailsService
+
+    @Autowired
+    private AuthTokenFilter authTokenFilter;
 
 
     @Bean
@@ -66,11 +72,6 @@ public class WebSecurityConfig { // Renomeei a classe para seguir a convenção
     }
 
     @Bean
-    public AuthTokenFilter authenticationJwtTokenFilter() {
-        return new AuthTokenFilter();
-    }
-
-    @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource())) // Configuração CORS
@@ -82,7 +83,7 @@ public class WebSecurityConfig { // Renomeei a classe para seguir a convenção
                                 .anyRequest().authenticated()
                 )
                 .authenticationProvider(authenticationProvider())
-                .addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(authTokenFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

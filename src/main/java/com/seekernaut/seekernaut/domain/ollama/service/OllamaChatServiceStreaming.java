@@ -1,13 +1,21 @@
 package com.seekernaut.seekernaut.domain.ollama.service;
 
+import com.seekernaut.seekernaut.api.ollamastreaming.dto.ConversationStartResponse;
 import com.seekernaut.seekernaut.api.ollamastreaming.dto.OllamaChatRequestDto;
 import com.seekernaut.seekernaut.api.ollamastreaming.dto.OllamaChatResponseDto;
 import com.seekernaut.seekernaut.client.ollama.webclient.OllamaChatApiClient;
+import com.seekernaut.seekernaut.domain.conversations.model.Conversation;
+import com.seekernaut.seekernaut.domain.conversations.repository.ConversationRepository;
 import com.seekernaut.seekernaut.domain.messages.model.Message;
 import com.seekernaut.seekernaut.domain.messages.repository.MessageRepository;
+import com.seekernaut.seekernaut.domain.user.model.Usuario;
+import com.seekernaut.seekernaut.security.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.catalina.security.SecurityUtil;
 import org.springframework.core.io.buffer.DataBuffer;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
@@ -30,6 +38,34 @@ public class OllamaChatServiceStreaming {
 
     private final OllamaChatApiClient ollamaChatApiClient;
     private final MessageRepository messageRepository;
+    private final ConversationRepository conversationRepository;
+
+    /**
+     * <p>Inicia uma nova conversa.</p>
+     * <p>Este método cria uma nova entrada na tabela de conversas e retorna um {@link Mono}
+     * contendo um {@link ConversationStartResponse} com o ID da nova conversa.</p>
+     * <p>A operação de salvamento da nova conversa é executada em um {@link Schedulers#boundedElastic()}
+     * para evitar o bloqueio do thread reativo principal.</p>
+     *
+     * @return {@link Mono} de {@link ConversationStartResponse} contendo o ID da nova conversa.
+     */
+    public Mono<ConversationStartResponse> startNewChat(Usuario usuario) {
+        System.out.println(usuario);
+        return Mono.fromCallable(() -> {
+            Conversation newConversation =
+                    Conversation.builder()
+                    .user(usuario)
+                    .startedAt(OffsetDateTime.now())
+                    .build();
+            return conversationRepository.save(newConversation);
+        })
+            .subscribeOn(Schedulers.boundedElastic())
+                .map(conversation -> {
+                    ConversationStartResponse response = new ConversationStartResponse();
+                    response.setConversationId(conversation.getConversationId());
+                    return response;
+                });
+    }
 
     /**
      * Utilizado para armazenar temporariamente a parte de uma linha JSON incompleta

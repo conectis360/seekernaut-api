@@ -16,6 +16,8 @@ import java.util.UUID;
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Entity
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Table(name = "messages")
 public class Message {
 
@@ -40,20 +42,4 @@ public class Message {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "conversation_id", referencedColumnName = "conversation_id", insertable = false, updatable = false)
     private Conversation conversation;
-
-    public Message(UUID conversationId, String senderType, String content) {
-        this.conversationId = conversationId;
-        this.senderType = senderType;
-        this.content = content;
-    }
-
-    @Builder
-    public Message(Long messageId, UUID conversationId, String senderType, String content, OffsetDateTime sentAt, Conversation conversation) {
-        this.messageId = messageId;
-        this.conversationId = conversationId;
-        this.senderType = senderType;
-        this.content = content;
-        this.sentAt = sentAt;
-        this.conversation = conversation;
-    }
 }

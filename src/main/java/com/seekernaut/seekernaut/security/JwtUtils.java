@@ -78,7 +78,7 @@ public class JwtUtils {
      * @return O nome de usuário contido no token.
      */
     public String getUserNameFromJwtToken(String token) {
-        return Jwts.parser() // Use Jwts.parser() para versões mais antigas
+        return Jwts.parser() // Use parserBuilder()
                 .setSigningKey(getSignInKey())
                 .build()
                 .parseClaimsJws(token)
