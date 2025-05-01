@@ -45,9 +45,9 @@ public class OllamaApiImpl implements OllamaApi {
     }
 
     @Override
-    public Mono<ConversationStartResponse> startChat() {
+    public Mono<OllamaChatResponseDto> startChat(OllamaChatRequestDto requestDto) {
         Usuario usuario = usuarioService.retornarUsuarioLogado(SecurityUtils.getCurrentUserLogin().orElseThrow(() -> new BusinessException(messages.get("usuario.nao-encontrado"))));
-        return ollamaChatServiceStreaming.startNewChat(usuario);
+        return ollamaChatServiceStreaming.startNewChat(requestDto, usuario);
     }
 
     public Flux<OllamaChatResponseDto> chat(UUID conversationId, OllamaChatRequestDto request) {

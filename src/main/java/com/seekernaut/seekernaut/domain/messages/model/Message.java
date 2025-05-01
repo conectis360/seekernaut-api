@@ -27,9 +27,6 @@ public class Message {
     @EqualsAndHashCode.Include
     private Long messageId;
 
-    @Column(name = "conversation_id", nullable = false)
-    private UUID conversationId;
-
     @Column(name = "sender_type", nullable = false, length = 10)
     private String senderType;
 
@@ -40,6 +37,6 @@ public class Message {
     private OffsetDateTime sentAt = OffsetDateTime.now();
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "conversation_id", referencedColumnName = "conversation_id", insertable = false, updatable = false)
+    @JoinColumn(name = "conversation_id", referencedColumnName = "conversation_id")
     private Conversation conversation;
 }

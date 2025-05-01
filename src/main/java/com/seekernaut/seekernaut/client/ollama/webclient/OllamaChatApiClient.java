@@ -14,6 +14,7 @@ import reactor.core.publisher.Mono;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -60,7 +61,7 @@ public class OllamaChatApiClient {
                             })
                             .filter(dto -> dto != null);
                 })
-                .timeout(java.time.Duration.ofMinutes(5))
+                .timeout(Duration.ofMinutes(5))
                 .onErrorResume(e -> {
                     log.error("Erro na comunicação com o Ollama (chatStream): {}", e.getMessage());
                     return Flux.error(e);

@@ -1,6 +1,5 @@
 package com.seekernaut.seekernaut.domain.ollama.service;
 
-import com.seekernaut.seekernaut.api.ollamastreaming.dto.ConversationStartResponse;
 import com.seekernaut.seekernaut.api.ollamastreaming.dto.OllamaChatRequestDto;
 import com.seekernaut.seekernaut.api.ollamastreaming.dto.OllamaChatResponseDto;
 import com.seekernaut.seekernaut.client.ollama.webclient.OllamaChatApiClient;
@@ -37,30 +36,56 @@ public class OllamaChatServiceStreaming {
     private final MessageRepository messageRepository;
     private final ConversationRepository conversationRepository;
 
-    /**
-     * <p>Inicia uma nova conversa.</p>
-     * <p>Este método cria uma nova entrada na tabela de conversas e retorna um {@link Mono}
-     * contendo um {@link ConversationStartResponse} com o ID da nova conversa.</p>
-     * <p>A operação de salvamento da nova conversa é executada em um {@link Schedulers#boundedElastic()}
-     * para evitar o bloqueio do thread reativo principal.</p>
-     *
-     * @return {@link Mono} de {@link ConversationStartResponse} contendo o ID da nova conversa.
-     */
-    public Mono<ConversationStartResponse> startNewChat(Usuario usuario) {
+    public Mono<OllamaChatResponseDto> startNewChat(OllamaChatRequestDto ollamaChatRequestDto, Usuario usuario) {
+        // 1. Cria e salva a nova conversa
         return Mono.fromCallable(() -> {
-            Conversation newConversation =
-                    Conversation.builder()
-                            .user(usuario)
-                            .startedAt(OffsetDateTime.now())
-                            .title(titleGeneratorService.generateTitle("amor"))
-                            .build();
+            Conversation newConversation = Conversation.builder()
+                    .user(usuario)
+                    .startedAt(OffsetDateTime.now())
+                    .build();
             return conversationRepository.save(newConversation);
         })
                 .subscribeOn(Schedulers.boundedElastic())
-                .map(conversation -> {
-                    ConversationStartResponse response = new ConversationStartResponse();
-                    response.setConversationId(conversation.getConversationId());
-                    return response;
+                .flatMap(savedConversation -> {
+                    UUID conversationId = savedConversation.getConversationId();
+
+                    // 2. Persiste a mensagem inicial do usuário
+                    Message userMessage = Message.builder()
+                            .conversation(savedConversation)
+                            .senderType("user")
+                            .content(ollamaChatRequestDto.getMessages().get(0).getContent()) // Assume que a primeira mensagem é do usuário
+                            .sentAt(OffsetDateTime.now())
+                            .build();
+                    return Mono.fromCallable(() -> messageRepository.save(userMessage))
+                            .subscribeOn(Schedulers.boundedElastic())
+                            .flatMap(savedUserMessage -> {
+                                // 3. Envia a mensagem inicial para o Ollama e obtém a primeira resposta (em stream)
+                                return ollamaChatApiClient.chatStream(ollamaChatRequestDto)
+                                        .next() // Pega a primeira resposta do stream
+                                        .flatMap(firstOllamaResponse -> {
+                                            // 4. Persiste a primeira resposta do Ollama
+                                            Message ollamaResponse = Message.builder()
+                                                    .conversation(savedConversation)
+                                                    .senderType(firstOllamaResponse.getMessage().getRole())
+                                                    .content(firstOllamaResponse.getMessage().getContent())
+                                                    .sentAt(OffsetDateTime.now())
+                                                    .build();
+                                            return Mono.fromCallable(() -> messageRepository.save(ollamaResponse))
+                                                    .subscribeOn(Schedulers.boundedElastic())
+                                                    .map(savedOllamaResponse -> {
+                                                        // 5. Gera e atualiza o título da conversa (opcional, em background)
+                                                        String generatedTitle = titleGeneratorService.generateTitle(ollamaChatRequestDto.getMessages().get(0).getContent());
+                                                        savedConversation.setTitle(generatedTitle);
+                                                        Mono.fromCallable(() -> conversationRepository.save(savedConversation))
+                                                                .subscribeOn(Schedulers.boundedElastic())
+                                                                .subscribe(); // Inicia a atualização do título em background
+
+                                                        // 6. Retorna a primeira resposta do Ollama com o ID da conversa
+                                                        firstOllamaResponse.setConversationId(conversationId);
+                                                        return firstOllamaResponse;
+                                                    });
+                                        });
+                            });
                 });
     }
 
@@ -81,7 +106,6 @@ public class OllamaChatServiceStreaming {
     private Mono<Message> persistUserMessage(UUID conversationId, String content) {
         return Mono.fromCallable(() -> {
             Message userMessage = Message.builder()
-                    .conversationId(conversationId)
                     .senderType("user")
                     .content(content)
                     .sentAt(OffsetDateTime.now())
@@ -100,7 +124,6 @@ public class OllamaChatServiceStreaming {
     private Mono<Message> persistModelResponse(UUID conversationId, String fullResponse) {
         return Mono.fromCallable(() -> {
             Message modelMessage = Message.builder()
-                    .conversationId(conversationId)
                     .senderType("model")
                     .content(fullResponse)
                     .sentAt(OffsetDateTime.now())
@@ -132,8 +155,8 @@ public class OllamaChatServiceStreaming {
         AtomicReference<StringBuilder> fullResponseBuilder = new AtomicReference<>(new StringBuilder());
         Flux<OllamaChatResponseDto> ollamaResponseFlux = ollamaChatApiClient.chatStream(request)
                 .doOnNext(responseDto -> {
-                    if (responseDto != null && responseDto.getResponse() != null) {
-                        fullResponseBuilder.get().append(responseDto.getResponse());
+                    if (responseDto != null && responseDto.getMessage().getContent() != null) {
+                        fullResponseBuilder.get().append(responseDto.getMessage().getContent());
                     }
                 });
 

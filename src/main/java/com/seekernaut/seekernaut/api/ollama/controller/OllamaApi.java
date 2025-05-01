@@ -31,10 +31,10 @@ public interface OllamaApi {
     @PostMapping(value = "/generate-completion", consumes = {MediaType.APPLICATION_JSON_VALUE}, produces = {MediaType.APPLICATION_JSON_VALUE})
     Flux<OllamaGenerateResponseDto> generateCompletion(@RequestBody @Validated OllamaGenerateRequestDto body);
 
-    @Operation(summary = "Start New Chat", description = "Initiates a new chat conversation and returns the conversation ID.")
+    @Operation(summary = "Start New Chat", description = "Initiates a new chat conversation by receiving the first user message and returning the first response and conversation ID.")
     @ResponseStatus(HttpStatus.CREATED)
-    @PostMapping(value = "/conversations", produces = MediaType.APPLICATION_JSON_VALUE)
-    Mono<ConversationStartResponse> startChat();
+    @PostMapping(value = "/conversations", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    Mono<OllamaChatResponseDto> startChat(@RequestBody @Validated OllamaChatRequestDto request);
 
     @Operation(summary = "Chat in Conversation", description = "Send a message to an existing conversation.")
     @ResponseStatus(HttpStatus.OK)

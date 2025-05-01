@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * <p>DTO para cada evento da stream de resposta (ou a resposta única) do endpoint de chat do Ollama (`/chat`).</p>
@@ -31,7 +32,7 @@ public class OllamaChatResponseDto {
     /**
      * <p>O conteúdo da resposta do modelo para este evento (ou a resposta completa se não for streaming).</p>
      */
-    private String response;
+    private MessageDto message;
 
     /**
      * <p>Indica se esta é a última parte da resposta (fim da stream).</p>
@@ -78,4 +79,7 @@ public class OllamaChatResponseDto {
      */
     @JsonProperty("eval_duration")
     private Long evalDuration;
+
+    @JsonProperty("conversationId")
+    private UUID conversationId;
 }
