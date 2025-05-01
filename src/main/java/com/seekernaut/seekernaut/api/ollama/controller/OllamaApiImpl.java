@@ -51,7 +51,7 @@ public class OllamaApiImpl implements OllamaApi {
     }
 
     public Flux<OllamaChatResponseDto> chat(UUID conversationId, OllamaChatRequestDto request) {
-        return ollamaChatServiceStreaming.getChatCompletionAndPersist(conversationId, request);
+        return ollamaChatServiceStreaming.chat(conversationId, request);
     }
 
 }
