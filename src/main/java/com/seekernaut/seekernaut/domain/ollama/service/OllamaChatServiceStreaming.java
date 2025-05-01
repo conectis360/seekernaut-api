@@ -9,13 +9,9 @@ import com.seekernaut.seekernaut.domain.conversations.repository.ConversationRep
 import com.seekernaut.seekernaut.domain.messages.model.Message;
 import com.seekernaut.seekernaut.domain.messages.repository.MessageRepository;
 import com.seekernaut.seekernaut.domain.user.model.Usuario;
-import com.seekernaut.seekernaut.security.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.catalina.security.SecurityUtil;
 import org.springframework.core.io.buffer.DataBuffer;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
@@ -37,6 +33,7 @@ import java.util.concurrent.atomic.AtomicReference;
 public class OllamaChatServiceStreaming {
 
     private final OllamaChatApiClient ollamaChatApiClient;
+    private final TitleGeneratorService titleGeneratorService;
     private final MessageRepository messageRepository;
     private final ConversationRepository conversationRepository;
 
@@ -50,16 +47,16 @@ public class OllamaChatServiceStreaming {
      * @return {@link Mono} de {@link ConversationStartResponse} contendo o ID da nova conversa.
      */
     public Mono<ConversationStartResponse> startNewChat(Usuario usuario) {
-        System.out.println(usuario);
         return Mono.fromCallable(() -> {
             Conversation newConversation =
                     Conversation.builder()
-                    .user(usuario)
-                    .startedAt(OffsetDateTime.now())
-                    .build();
+                            .user(usuario)
+                            .startedAt(OffsetDateTime.now())
+                            .title(titleGeneratorService.generateTitle("amor"))
+                            .build();
             return conversationRepository.save(newConversation);
         })
-            .subscribeOn(Schedulers.boundedElastic())
+                .subscribeOn(Schedulers.boundedElastic())
                 .map(conversation -> {
                     ConversationStartResponse response = new ConversationStartResponse();
                     response.setConversationId(conversation.getConversationId());

@@ -60,3 +60,5 @@ logging:
 
 ollama:
   base-url: http://localhost:11434/
+  title-generation-model: gemma3:1b
+  title-generation-prompt: "Levando em consideração o histórico da conversa, gere apenas um título curto e objetivo. Responda APENAS com o título em uma única linha, sem explicações e com menos de 255 caracteres, lembre-se é apenas 1 opção de titulo. Histórico da conversa: "

@@ -1,11 +1,17 @@
 package com.seekernaut.seekernaut.api.ollama.dto;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 import java.util.Map;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class OllamaGenerateRequestDto {
     private String prompt;
     private String model;
@@ -29,9 +35,4 @@ public class OllamaGenerateRequestDto {
     private Integer penalize_newline;
     private String logprobs;
     private Map<String, Object> extra; // Para quaisquer outros parâmetros não mapeados explicitamente
-
-    // Construtor padrão necessário para desserialização
-    public OllamaGenerateRequestDto() {
-        this.stream = false; // Define um valor padrão sensato para stream
-    }
 }
