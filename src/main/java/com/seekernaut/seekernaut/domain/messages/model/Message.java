@@ -1,5 +1,6 @@
 package com.seekernaut.seekernaut.domain.messages.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.seekernaut.seekernaut.domain.conversations.model.Conversation;
 import jakarta.persistence.*;
 import lombok.*;
@@ -37,6 +38,7 @@ public class Message {
     private OffsetDateTime sentAt = OffsetDateTime.now();
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     @JoinColumn(name = "conversation_id", referencedColumnName = "conversation_id")
     private Conversation conversation;
 }

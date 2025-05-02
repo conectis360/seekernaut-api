@@ -6,6 +6,7 @@ import com.seekernaut.seekernaut.api.ollama.dto.OllamaGenerateResponseDto;
 import com.seekernaut.seekernaut.api.ollamastreaming.dto.ConversationStartResponse;
 import com.seekernaut.seekernaut.api.ollamastreaming.dto.OllamaChatRequestDto;
 import com.seekernaut.seekernaut.api.ollamastreaming.dto.OllamaChatResponseDto;
+import com.seekernaut.seekernaut.domain.messages.model.Message;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
@@ -40,4 +41,9 @@ public interface OllamaApi {
     @ResponseStatus(HttpStatus.OK)
     @PostMapping(value = "/conversations/{conversationId}/chat", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     Flux<OllamaChatResponseDto> chat(@PathVariable UUID conversationId, @RequestBody @Validated OllamaChatRequestDto request);
+
+    @Operation(summary = "Get Chat history", description = "Get all messages by conversationId")
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping(value = "/conversations/{conversationId}/chat", produces = MediaType.APPLICATION_JSON_VALUE)
+    Flux<Message> chatHistory(@PathVariable UUID conversationId);
 }

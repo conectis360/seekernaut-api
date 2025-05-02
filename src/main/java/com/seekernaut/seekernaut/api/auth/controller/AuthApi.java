@@ -13,6 +13,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Mono;
 
 @Tag(name = "Status")
 @RequestMapping("/v1/auth")
@@ -21,6 +22,6 @@ public interface AuthApi {
     @Operation(summary = "Inserir novo usuario", description = "Inserir novo usuario")
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping(value = "/login", consumes = {MediaType.APPLICATION_JSON_VALUE}, produces = {MediaType.APPLICATION_JSON_VALUE})
-    ResponseEntity<?> login(@RequestBody @Validated LoginDTO loginDTO);
+    Mono<ResponseEntity<?>> login(@RequestBody @Validated LoginDTO loginDTO);
 
 }

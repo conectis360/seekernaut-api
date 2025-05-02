@@ -4,6 +4,7 @@ server:
 spring:
   main:
     banner-mode: off
+    allow-bean-definition-overriding: true
   application:
     name: Seekernaut
     description: API for AI Chat Interface
@@ -48,6 +49,7 @@ seekernaut:
 logging:
   level:
     root: INFO
+    org.springframework.security: DEBUG
     com.seekernaut: INFO # Nível de log padrão para sua aplicação
     org:
       springframework: INFO

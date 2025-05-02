@@ -159,4 +159,10 @@ public class OllamaChatServiceStreaming {
                     }).subscribeOn(Schedulers.boundedElastic()).subscribe();
                 });
     }
+
+    public Flux<Message> chatHistory(UUID conversationId) {
+        List<Message> conversationHistory = messageRepository.findByConversation_ConversationIdOrderBySentAt(conversationId);
+        return Flux.defer(() -> Flux.fromIterable(conversationHistory))
+                .subscribeOn(Schedulers.boundedElastic());
+    }
 }
