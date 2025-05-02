@@ -9,7 +9,6 @@ import com.seekernaut.seekernaut.domain.conversations.repository.ConversationRep
 import com.seekernaut.seekernaut.domain.messages.model.Message;
 import com.seekernaut.seekernaut.domain.messages.repository.MessageRepository;
 import com.seekernaut.seekernaut.domain.user.model.Usuario;
-import com.seekernaut.seekernaut.utils.OllamaResponseFormatter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -141,30 +140,23 @@ public class OllamaChatServiceStreaming {
 
         // 5. Envia a requisição para o Ollama e processa a stream da resposta
         AtomicReference<StringBuilder> fullResponseBuilder = new AtomicReference<>(new StringBuilder());
-        Flux<OllamaChatResponseDto> ollamaResponseFlux = ollamaRequestMono.flatMapMany(ollamaChatApiClient::chatStream)
+        return ollamaRequestMono.flatMapMany(ollamaChatApiClient::chatStream)
                 .doOnNext(responseDto -> {
-                    String rawResponse = responseDto.getMessage().getContent();
-                    String formattedResponse = OllamaResponseFormatter.formatOllamaResponseAggressive(rawResponse); // Escolha a função de formatação que preferir
-
                     if (responseDto != null && responseDto.getMessage() != null && responseDto.getMessage().getContent() != null) {
-                        fullResponseBuilder.get().append(formattedResponse);
+                        fullResponseBuilder.get().append(responseDto.getMessage().getContent());
+                        // Aqui você enviaria 'formattedResponse' para o seu frontend em tempo real
                     }
+                })
+                .doOnComplete(() -> {
+                    Mono.fromCallable(() -> {
+                        Message modelMessage = Message.builder()
+                                .conversation(Conversation.builder().conversationId(conversationId).build())
+                                .senderType("model")
+                                .content(fullResponseBuilder.get().toString()) // Salva a concatenação bruta (formatada)
+                                .sentAt(OffsetDateTime.now())
+                                .build();
+                        return messageRepository.save(modelMessage);
+                    }).subscribeOn(Schedulers.boundedElastic()).subscribe();
                 });
-
-        // 6. Persiste a resposta completa do modelo após a conclusão da stream (bloqueante em thread separado)
-        ollamaResponseFlux.doOnComplete(() -> {
-            Mono.fromCallable(() -> {
-                Message modelMessage = Message.builder()
-                        .conversation(Conversation.builder().conversationId(conversationId).build())
-                        .senderType("model")
-                        .content(fullResponseBuilder.get().toString())
-                        .sentAt(OffsetDateTime.now())
-                        .build();
-                return messageRepository.save(modelMessage);
-            }).subscribeOn(Schedulers.boundedElastic())
-                    .subscribe();
-        }).subscribe();
-
-        return ollamaResponseFlux;
     }
 }

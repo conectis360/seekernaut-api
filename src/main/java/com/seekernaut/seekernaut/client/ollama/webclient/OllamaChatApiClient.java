@@ -6,6 +6,7 @@ import com.seekernaut.seekernaut.api.ollamastreaming.dto.OllamaChatResponseDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.buffer.DataBuffer;
+import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -37,29 +38,33 @@ public class OllamaChatApiClient {
                 .retrieve()
                 .bodyToFlux(DataBuffer.class)
                 .flatMap(dataBuffer -> {
-                    byte[] bytes = new byte[dataBuffer.readableByteCount()];
-                    dataBuffer.read(bytes);
-                    String content = new String(bytes, StandardCharsets.UTF_8);
-                    String currentBuffer = incompleteLine.get() + content;
-                    String[] lines = currentBuffer.split("\\n");
-                    incompleteLine.set("");
+                    try {
+                        byte[] bytes = new byte[dataBuffer.readableByteCount()];
+                        dataBuffer.read(bytes);
+                        String content = new String(bytes, StandardCharsets.UTF_8);
+                        String currentBuffer = incompleteLine.get() + content;
+                        String[] lines = currentBuffer.split("\\n");
+                        incompleteLine.set("");
 
-                    if (lines.length > 0 && !lines[lines.length - 1].trim().isEmpty() && !lines[lines.length - 1].trim().endsWith("}")) {
-                        incompleteLine.set(lines[lines.length - 1]);
-                        lines = Arrays.copyOf(lines, lines.length - 1);
+                        if (lines.length > 0 && !lines[lines.length - 1].trim().isEmpty() && !lines[lines.length - 1].trim().endsWith("}")) {
+                            incompleteLine.set(lines[lines.length - 1]);
+                            lines = Arrays.copyOf(lines, lines.length - 1);
+                        }
+
+                        return Flux.fromArray(lines)
+                                .filter(line -> !line.trim().isEmpty())
+                                .map(line -> {
+                                    try {
+                                        return objectMapper.readValue(line, OllamaChatResponseDto.class);
+                                    } catch (IOException e) {
+                                        log.error("Erro ao desserializar linha da stream de chat: {}", e.getMessage());
+                                        return null;
+                                    }
+                                })
+                                .filter(dto -> dto != null);
+                    } finally {
+                        DataBufferUtils.release(dataBuffer);
                     }
-
-                    return Flux.fromArray(lines)
-                            .filter(line -> !line.trim().isEmpty())
-                            .map(line -> {
-                                try {
-                                    return objectMapper.readValue(line, OllamaChatResponseDto.class);
-                                } catch (IOException e) {
-                                    log.error("Erro ao desserializar linha da stream de chat: {}", e.getMessage());
-                                    return null;
-                                }
-                            })
-                            .filter(dto -> dto != null);
                 })
                 .timeout(Duration.ofMinutes(5))
                 .onErrorResume(e -> {
