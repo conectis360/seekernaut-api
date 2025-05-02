@@ -12,6 +12,7 @@ import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Mono;
 
 @Tag(name = "Status")
 @RequestMapping("/v1/user")
@@ -20,7 +21,7 @@ public interface UserApi {
     @Operation(summary = "Listar Status", description = "Listar todos Status")
     @ResponseStatus(HttpStatus.OK)
     @GetMapping(produces = {MediaType.APPLICATION_JSON_VALUE})
-    DefaultPaginationResponse<UsuarioDTO> findAll(@ParameterObject DefaultRequestParams requestParams,
+    Mono<DefaultPaginationResponse<UsuarioDTO>> findAll(@ParameterObject DefaultRequestParams requestParams,
                                                   @ParameterObject UsuarioFilterDto filter);
 
     @Operation(summary = "Listar usuario por id", description = "Listar usuario por id")
@@ -31,7 +32,7 @@ public interface UserApi {
     @Operation(summary = "Inserir novo usuario", description = "Inserir novo usuario")
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping(produces = {MediaType.APPLICATION_JSON_VALUE})
-    UsuarioDTO insert(@RequestBody @Validated UsuarioDTO usuarioDTO);
+    Mono<UsuarioDTO> insert(@RequestBody @Validated UsuarioDTO usuarioDTO);
 
     @Operation(summary = "Atualizar usuario", description = "Atualizar usuario")
     @ResponseStatus(HttpStatus.OK)

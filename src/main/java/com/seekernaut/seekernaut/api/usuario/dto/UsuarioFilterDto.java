@@ -7,7 +7,7 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class UsuarioFilterDto {
 
-    private Long codigoUsuario;
-    private Long codigoTipoUsuario;
+    private String usuario;
+    private String email;
 
 }

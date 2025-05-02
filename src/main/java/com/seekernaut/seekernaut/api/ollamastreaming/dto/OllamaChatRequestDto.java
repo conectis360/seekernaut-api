@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import reactor.core.publisher.Mono;
 
 import java.util.List;
 import java.util.Map;
@@ -34,7 +35,7 @@ public class OllamaChatRequestDto {
      */
     @NotEmpty(message = "A lista de mensagens não pode estar vazia.")
     @Valid
-    private List<MessageDto> messages;
+    private Mono<List<MessageDto>> messages;
 
     /**
      * <p>Indica se a resposta deve ser enviada em stream (múltiplos eventos).</p>

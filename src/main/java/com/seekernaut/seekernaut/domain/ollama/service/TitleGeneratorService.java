@@ -2,9 +2,12 @@ package com.seekernaut.seekernaut.domain.ollama.service;
 
 import com.seekernaut.seekernaut.api.ollama.dto.OllamaGenerateRequestDto;
 import com.seekernaut.seekernaut.api.ollama.dto.OllamaGenerateResponseDto;
+import com.seekernaut.seekernaut.domain.messages.model.Message;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Mono;
 
 /**
  * <p>Serviço responsável pela geração de títulos concisos para conversas,
@@ -12,6 +15,7 @@ import org.springframework.stereotype.Service;
  */
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class TitleGeneratorService {
 
     private final OllamaService ollamaService;
@@ -32,37 +36,27 @@ public class TitleGeneratorService {
     private String titleGenerationPrompt;
 
     /**
-     * <p>Gera um título conciso para um dado texto (prompt) utilizando o modelo Ollama configurado.</p>
-     * <p>Este método constrói uma requisição para a API do Ollama, solicitando uma resposta única
-     * (sem streaming) para a geração do título. A primeira resposta do fluxo é bloqueada e utilizada
-     * como o título gerado.</p>
+     * Realiza a chamada para a API do Ollama para gerar a completação (o título) de forma reativa.
      *
-     * @param prompt O texto base para o qual o título deve ser gerado. Este texto será concatenado
-     *               com o {@link #titleGenerationPrompt}. Geralmente, é a primeira mensagem do usuário
-     *               ou um resumo das primeiras interações.
-     * @return Uma {@link String} contendo o título gerado pelo modelo Ollama. Retorna "Sem título"
-     * em caso de erro, resposta vazia ou nula do modelo.
+     * @param prompt O prompt a ser enviado para o modelo de geração de título.
+     * @return Um Mono de String contendo o título gerado.
      */
-    public String generateTitle(String prompt) {
-        // Realiza a chamada para a API do Ollama para gerar a completação (o título).
-        // O parâmetro 'stream(false)' indica que esperamos uma resposta única.
-        OllamaGenerateResponseDto responseDto = ollamaService.generateCompletion(
+    public Mono<String> generateTitleReativo(String prompt) {
+        return ollamaService.generateCompletion(
                 OllamaGenerateRequestDto.builder()
-                        .model(titleGenerationModel) // Utiliza o modelo configurado
-                        .prompt(titleGenerationPrompt + prompt) // Combina o prefixo com o prompt fornecido
+                        .model(titleGenerationModel)
+                        .prompt(titleGenerationPrompt + prompt)
                         .stream(false) // Solicita uma resposta não em stream
                         .build()
-        ).blockFirst(); // Bloqueia a thread e obtém o primeiro (e esperado único) item do Flux.
-        // Se o Flux estiver vazio, 'responseDto' será null.
-
-        // Verifica se a resposta do modelo não é nula e se contém um texto de resposta não vazio.
-        if (responseDto != null && responseDto.getResponse() != null && !responseDto.getResponse().trim().isEmpty()) {
-            // Retorna o texto da resposta (o título), removendo espaços em branco no início e no fim.
-            return responseDto.getResponse().trim();
-        } else {
-            // Se a resposta for nula ou vazia, loga um erro e retorna um título padrão.
-            System.err.println("Erro ao gerar título ou resposta vazia.");
-            return "Sem título";
-        }
+        )
+                .next() // Obtém o primeiro (e esperado único) item do Flux.
+                .map(responseDto -> {
+                    if (responseDto != null && responseDto.getResponse() != null && !responseDto.getResponse().trim().isEmpty()) {
+                        return responseDto.getResponse().trim();
+                    } else {
+                        log.error("Erro ao gerar título ou resposta vazia.");
+                        return "Sem título";
+                    }
+                });
     }
 }

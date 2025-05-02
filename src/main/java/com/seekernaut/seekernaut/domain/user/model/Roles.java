@@ -1,8 +1,10 @@
 package com.seekernaut.seekernaut.domain.user.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
+import org.springframework.data.relational.core.mapping.Column;
+import org.springframework.data.relational.core.mapping.Table;
 
 import java.io.Serializable;
 
@@ -10,19 +12,23 @@ import java.io.Serializable;
 @Setter
 @ToString
 @EqualsAndHashCode
-@Entity
+@Table(name = "user_roles")
 @NoArgsConstructor
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-@Table(schema = "public", name = "user_roles")
+@AllArgsConstructor
+@Builder
 public class Roles implements Serializable {
 
-    @EmbeddedId
+    @Id
+    @Transient // @EmbeddedId não tem um equivalente direto como @Id composto em R2DBC
     private RolesPK id;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id", updatable = false, insertable = false)
-    private Usuario usuario;
+    @Column("user_id")
+    private Long userId;
 
-    @Column(name = "role_id", updatable = false, insertable = false)
+    @Column("role_id")
     private Long roleId;
+
+    @Transient
+    @ToString.Exclude
+    private transient Usuario usuario; // Referência transient para Usuario, busque via join se necessário
 }

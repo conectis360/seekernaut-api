@@ -12,8 +12,6 @@ import com.seekernaut.seekernaut.domain.ollama.service.OllamaChatServiceStreamin
 import com.seekernaut.seekernaut.domain.ollama.service.OllamaService;
 import com.seekernaut.seekernaut.domain.user.model.Usuario;
 import com.seekernaut.seekernaut.domain.user.service.UsuarioService;
-import com.seekernaut.seekernaut.exception.BusinessException;
-import com.seekernaut.seekernaut.security.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.RestController;
@@ -44,8 +42,8 @@ public class OllamaApiImpl implements OllamaApi {
 
     @Override
     public Mono<OllamaChatResponseDto> startChat(OllamaChatRequestDto requestDto) {
-        Usuario usuario = usuarioService.retornarUsuarioLogado(SecurityUtils.getCurrentUserLogin().orElseThrow(() -> new BusinessException(messages.get("usuario.nao-encontrado"))));
-        return ollamaChatServiceStreaming.startNewChat(requestDto, usuario);
+        Usuario usuario = usuarioService.obterUsuarioLogado().block();
+        return ollamaChatServiceStreaming.startNewChatReativo(requestDto, usuario);
     }
 
     public Flux<OllamaChatResponseDto> chat(UUID conversationId, OllamaChatRequestDto request) {

@@ -1,15 +1,12 @@
 package com.seekernaut.seekernaut.domain.user.repository;
 
 
-import com.seekernaut.seekernaut.config.Role;
 import com.seekernaut.seekernaut.domain.user.model.TipoUsuario;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.r2dbc.repository.R2dbcRepository;
 import org.springframework.stereotype.Repository;
-
-import java.util.Optional;
+import reactor.core.publisher.Mono;
 
 @Repository
-public interface TipoUsuarioRepository extends JpaRepository<TipoUsuario, Long>, JpaSpecificationExecutor<TipoUsuario> {
-    Optional<TipoUsuario> findByTipoUsuario(Role name);
+public interface TipoUsuarioRepository extends R2dbcRepository<TipoUsuario, Long> {
+    Mono<TipoUsuario> findByTipoUsuario(String name); // Alterado para String
 }

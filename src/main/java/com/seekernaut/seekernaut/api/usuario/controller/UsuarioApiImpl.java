@@ -4,12 +4,14 @@ package com.seekernaut.seekernaut.api.usuario.controller;
 import com.seekernaut.seekernaut.api.usuario.dto.UsuarioDTO;
 import com.seekernaut.seekernaut.api.usuario.dto.UsuarioFilterDto;
 import com.seekernaut.seekernaut.api.usuario.mapper.UsuarioMapper;
+import com.seekernaut.seekernaut.domain.user.model.Usuario;
 import com.seekernaut.seekernaut.domain.user.service.UsuarioService;
 import com.seekernaut.seekernaut.response.DefaultPaginationResponse;
 import com.seekernaut.seekernaut.response.DefaultRequestParams;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Mono;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -20,8 +22,8 @@ public class UsuarioApiImpl implements UserApi {
     private final UsuarioMapper usuarioMapper;
 
     @Override
-    public DefaultPaginationResponse<UsuarioDTO> findAll(DefaultRequestParams requestParams, UsuarioFilterDto filter) {
-        return usuarioService.findAll(requestParams, filter);
+    public Mono<DefaultPaginationResponse<UsuarioDTO>> findAll(DefaultRequestParams requestParams, UsuarioFilterDto filter) {
+        return usuarioService.findAllReactive(requestParams, filter);
     }
 
     @Override
@@ -30,9 +32,9 @@ public class UsuarioApiImpl implements UserApi {
         return null;
     }
 
-    @Override
-    public UsuarioDTO insert(UsuarioDTO usuarioDTO) {
-        return usuarioMapper.toDto(usuarioService.registrarUsuario(usuarioMapper.toEntity(usuarioDTO)));
+    public Mono<UsuarioDTO> insert(UsuarioDTO usuarioDTO) {
+        Mono<Usuario> usuarioMono = usuarioService.registrarUsuarioReactive(usuarioMapper.toEntity(usuarioDTO));
+        return usuarioMono.map(usuarioMapper::toDto);
     }
 
     @Override

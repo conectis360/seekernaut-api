@@ -2,43 +2,49 @@ package com.seekernaut.seekernaut.domain.messages.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.seekernaut.seekernaut.domain.conversations.model.Conversation;
-import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
+import org.springframework.data.relational.core.mapping.Column;
+import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
 /**
- * <p>Entidade JPA que representa uma mensagem na conversa.</p>
+ * <p>Entidade R2DBC que representa uma mensagem na conversa.</p>
  */
 @Getter
 @Setter
 @ToString
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@Entity
+@Table(name = "messages")
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Table(name = "messages")
 public class Message {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "message_id")
+    @Column("message_id") // Nome da coluna no banco
     @EqualsAndHashCode.Include
     private Long messageId;
 
-    @Column(name = "sender_type", nullable = false, length = 10)
+    @Column("sender_type")
     private String senderType;
 
-    @Column(name = "content", nullable = false, columnDefinition = "TEXT")
+    @Column("content")
     private String content;
 
-    @Column(name = "sent_at")
+    @Column("sent_at")
     private OffsetDateTime sentAt = OffsetDateTime.now();
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-    @JoinColumn(name = "conversation_id", referencedColumnName = "conversation_id")
-    private Conversation conversation;
+    @Column("conversation_id")
+    private UUID conversationId; // Referencia para a Conversation usando o ID
+
+    // Em R2DBC, relacionamentos ManyToOne/OneToMany geralmente são gerenciados por ID
+    // Se você precisar da entidade Conversation diretamente, precisará fazer um join na sua consulta reativa.
+    // A anotação @Transient indica que este campo não será mapeado diretamente para uma coluna.
+    @Transient
+    @JsonIgnoreProperties("messages") // Evita loops de serialização, ajuste conforme necessário
+    private transient Conversation conversation;
 }

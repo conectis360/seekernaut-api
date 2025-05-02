@@ -2,13 +2,20 @@ package com.seekernaut.seekernaut.domain.user.repository;
 
 
 import com.seekernaut.seekernaut.domain.user.model.Roles;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import feign.Param;
+import org.springframework.data.mongodb.repository.Query;
+import org.springframework.data.r2dbc.repository.R2dbcRepository;
 import org.springframework.stereotype.Repository;
-
-import java.util.List;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 @Repository
-public interface RoleRepository extends JpaRepository<Roles, Long>, JpaSpecificationExecutor<Roles> {
-    List<Roles> findByRoleId(Long roleId);
+public interface RoleRepository extends R2dbcRepository<Roles, Long> {
+
+    Mono<Roles> findByUserIdAndRoleId(Long userId, Long roleId);
+
+    Flux<Roles> findByUserId(Long userId);
+
+    Flux<Roles> findByRoleId(Long roleId);
+
 }

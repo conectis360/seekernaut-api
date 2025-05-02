@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
@@ -29,6 +30,7 @@ public interface OllamaApi {
 
     @Operation(summary = "Generate Completion", description = "Send a prompt to the specified model and return the answer ")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasRole('USER')")
     @PostMapping(value = "/generate-completion", consumes = {MediaType.APPLICATION_JSON_VALUE}, produces = {MediaType.APPLICATION_JSON_VALUE})
     Flux<OllamaGenerateResponseDto> generateCompletion(@RequestBody @Validated OllamaGenerateRequestDto body);
 
@@ -44,6 +46,7 @@ public interface OllamaApi {
 
     @Operation(summary = "Get Chat history", description = "Get all messages by conversationId")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasRole('TEST')")
     @GetMapping(value = "/conversations/{conversationId}/chat", produces = MediaType.APPLICATION_JSON_VALUE)
     Flux<Message> chatHistory(@PathVariable UUID conversationId);
 }

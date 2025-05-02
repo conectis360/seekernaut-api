@@ -8,6 +8,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 @Service
 @RequiredArgsConstructor
@@ -17,8 +18,9 @@ public class UserDetailsServiceImpl implements ReactiveUserDetailsService {
 
     @Override
     public Mono<UserDetails> findByUsername(String username) {
-        return Mono.fromCallable(() -> usuarioRepository.findByUsuarioWithTipoUsuario(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + username)))
-                .map(User::build);
+        return usuarioRepository.findByUsuario(username)
+                .switchIfEmpty(Mono.error(new UsernameNotFoundException("User not found with username: " + username)))
+                .map(user -> (UserDetails) User.build(user))
+                .subscribeOn(Schedulers.boundedElastic());
     }
 }

@@ -2,24 +2,27 @@ package com.seekernaut.seekernaut.domain.user.model;
 
 
 import com.seekernaut.seekernaut.config.Role;
-import jakarta.persistence.*;
-import lombok.*;
-
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Column;
+import org.springframework.data.relational.core.mapping.Table;
 
 @Getter
 @Setter
 @ToString
 @EqualsAndHashCode
-@Entity
+@Table(name = "tipo_usuario")
 @NoArgsConstructor
 public class TipoUsuario {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
+    @Column("id")
     private Long id;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "tipoUsuario")
-    private Role tipoUsuario;
+    @Column("tipo_usuario")
+    private String tipoUsuario;
 }

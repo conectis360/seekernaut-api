@@ -3,6 +3,7 @@ package com.seekernaut.seekernaut.domain.auth.service;
 import com.seekernaut.seekernaut.api.auth.dto.LoginDTO;
 import com.seekernaut.seekernaut.components.Messages;
 import com.seekernaut.seekernaut.domain.user.model.User;
+import com.seekernaut.seekernaut.domain.user.service.UsuarioService;
 import com.seekernaut.seekernaut.exception.BusinessException;
 import com.seekernaut.seekernaut.response.JwtResponse;
 import com.seekernaut.seekernaut.security.JwtUtils;
@@ -24,6 +25,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class AuthService {
     private final ReactiveAuthenticationManager authenticationManager; // Use ReactiveAuthenticationManager
+    private final UsuarioService usuarioServiceReactive;
     private final JwtUtils jwtUtils;
     private final Messages messages;
 
@@ -37,29 +39,29 @@ public class AuthService {
                 });
     }
 
-    public Mono<JwtResponse> fazLogin(LoginDTO loginDTO) {
-        return this.autenticaUsuario(loginDTO.getUsername(), loginDTO.getPassword())
-                .flatMap(autenticado -> {
-                    SecurityContextHolder.getContext().setAuthentication(autenticado);
-                    String jwt = jwtUtils.generateJwtToken(autenticado);
+    public Mono<JwtResponse> fazLoginReativo(LoginDTO loginDTO) {
+        Mono<Authentication> authenticationMono = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(loginDTO.getUsername(), loginDTO.getPassword())
+        );
 
-                    User userDetails = (User) autenticado.getPrincipal(); // Assumindo que seu principal é Usuario
-                    List<String> roles = userDetails.getAuthorities().stream()
-                            .map(item -> item.getAuthority())
-                            .collect(Collectors.toList());
+        return authenticationMono.flatMap(autenticado -> {
+            SecurityContextHolder.getContext().setAuthentication(autenticado);
+            String jwt = jwtUtils.generateJwtToken(autenticado);
+            User userDetails = (User) autenticado.getPrincipal();
 
-                    JwtResponse token = new JwtResponse(
-                            jwt,
-                            // Adapte para pegar o ID do Usuario se necessário (pode não estar no UserDetails padrão)
-                            null, // Substitua pelo ID real
-                            userDetails.getUsername(),
-                            // Adapte para pegar o email do Usuario se necessário
-                            null, // Substitua pelo email real
-                            roles,
-                            // Adapte para pegar o nome do Usuario se necessário
-                            null // Substitua pelo nome real
-                    );
-                    return Mono.just(token);
-                });
+            // Busca as roles do usuário de forma reativa usando o serviço de usuários
+            return usuarioServiceReactive.buscarRolesPorUsername(userDetails.getUsername())
+                    .map(roles -> {
+                        JwtResponse token = new JwtResponse(
+                                jwt,
+                                userDetails.getId(),
+                                userDetails.getUsername(),
+                                userDetails.getEmail(),
+                                roles,
+                                userDetails.getNome()
+                        );
+                        return token;
+                    });
+        });
     }
 }

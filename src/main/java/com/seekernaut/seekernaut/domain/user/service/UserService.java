@@ -4,7 +4,6 @@ import com.seekernaut.seekernaut.domain.user.model.User;
 import com.seekernaut.seekernaut.domain.user.model.Usuario;
 import com.seekernaut.seekernaut.domain.user.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -19,9 +18,7 @@ public class UserService implements UserDetailsService {
     @Override
     @Transactional
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        Usuario user = userRepository.findByUsuario(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User Not Found with username: " + username));
-
+        Usuario user = userRepository.findByUsuario(username).block();
         return User.build(user);
     }
 

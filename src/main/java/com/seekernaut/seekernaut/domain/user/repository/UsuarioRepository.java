@@ -1,31 +1,27 @@
 package com.seekernaut.seekernaut.domain.user.repository;
 
 
-import com.seekernaut.seekernaut.config.Role;
 import com.seekernaut.seekernaut.domain.user.model.Usuario;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.stereotype.Repository;
+import org.springframework.data.r2dbc.repository.R2dbcRepository;
+import org.springframework.data.r2dbc.repository.Query;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
-import java.util.List;
-import java.util.Optional;
+public interface UsuarioRepository extends R2dbcRepository<Usuario, Long> {
+    Mono<Usuario> findByUsuario(String username);
+    Mono<Boolean> existsByUsuario(String username);
+    Mono<Boolean> existsByEmail(String email);
+    Mono<Usuario> findByEmail(String email);
+    Flux<Usuario> findByTipoUsuario_TipoUsuario(String role);
 
-@Repository
-public interface UsuarioRepository extends JpaRepository<Usuario,Long>, JpaSpecificationExecutor<Usuario> {
-    Optional<Usuario> findByUsuario(String username);
+    @Query("SELECT * FROM usuario " +
+            "WHERE (:usuario IS NULL OR usuario = :usuario) " +
+            "AND (:email IS NULL OR email = :email) " +
+            "LIMIT :pageSize OFFSET :offset")
+    Flux<Usuario> findAllWithFiltersAndPagination(String usuario, String email, int pageSize, long offset);
 
-    @Query("SELECT u FROM Usuario u JOIN FETCH u.tipoUsuario WHERE u.usuario = :username")
-    Optional<Usuario> findByUsuarioWithTipoUsuario(String username);
-
-    Boolean existsByUsuario(String username);
-
-    Boolean existsByEmail(String email);
-
-    UserDetails findByEmail(String email);
-
-    List<Usuario> findByTipoUsuarioTipoUsuario(Role role);
-
-
+    @Query("SELECT COUNT(*) FROM usuario " +
+            "WHERE (:usuario IS NULL OR usuario = :usuario) " +
+            "AND (:email IS NULL OR email = :email)")
+    Mono<Long> countAllWithFilters(String usuario, String email);
 }

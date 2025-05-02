@@ -18,7 +18,7 @@ public class AuthApiImpl implements AuthApi {
 
     @Override
     public Mono<ResponseEntity<?>> login(LoginDTO loginDTO) {
-        return authService.fazLogin(loginDTO)
+        return authService.fazLoginReativo(loginDTO)
                 .map(token -> ResponseEntity.ok(token));
     }
 

@@ -1,41 +1,44 @@
 package com.seekernaut.seekernaut.domain.conversations.model;
 
 import com.seekernaut.seekernaut.domain.user.model.Usuario;
-import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.GenericGenerator;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
+import org.springframework.data.relational.core.mapping.Column;
+import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
 /**
- * <p>Entidade JPA que representa uma conversa.</p>
+ * <p>Entidade R2DBC que representa uma conversa.</p>
  */
 @Getter
 @Setter
 @ToString
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@Entity
+@Table(name = "conversations")
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Table(name = "conversations")
 public class Conversation {
 
     @Id
-    @GeneratedValue(generator = "UUID")
-    @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
-    @Column(name = "conversation_id", updatable = false, nullable = false)
+    @Column("conversation_id")
     @EqualsAndHashCode.Include
     private UUID conversationId;
 
-    @Column(name = "started_at")
+    @Column("started_at")
     private OffsetDateTime startedAt = OffsetDateTime.now();
 
-    @Column(name = "title")
+    @Column("title")
     private String title;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", referencedColumnName = "id", updatable = false)
-    private Usuario user;
+    @Column("user_id")
+    private Long userId; // Referencia para o Usuario usando o ID
+
+    // Em R2DBC, relacionamentos ManyToOne/OneToMany geralmente são gerenciados por ID
+    // Se você precisar da entidade Usuario diretamente, precisará fazer um join na sua consulta reativa.
+    @Transient
+    private transient Usuario user;
 }

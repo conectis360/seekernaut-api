@@ -1,10 +1,11 @@
 package com.seekernaut.seekernaut.domain.user.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import jakarta.persistence.*;
 import lombok.*;
-
+import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
+import org.springframework.data.relational.core.mapping.Column;
+import org.springframework.data.relational.core.mapping.Table;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -13,43 +14,36 @@ import java.util.Set;
 @Setter
 @ToString
 @EqualsAndHashCode
-@Entity
+@Table(name = "usuario")
 @NoArgsConstructor
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-@Table(
-        uniqueConstraints = {
-            @UniqueConstraint(columnNames = "usuario"),
-            @UniqueConstraint(columnNames = "email")
-		})
+@AllArgsConstructor
+@Builder
 public class Usuario {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
+    @Column("id")
     private Long id;
 
-    @Column(name = "email")
+    @Column
     private String email;
 
-    @Column(name = "nome")
+    @Column
     private String nome;
 
-    @Column(name = "foto", columnDefinition = "bytea") // Nova coluna para a foto (bytea no banco de dados)
-    private byte[] foto; // Armazena a foto como um array de bytes
+    @Column
+    private byte[] foto;
 
     @JsonIgnore
-    @Column(name = "senha")
+    @Column
     private String senha;
 
-    @Column(name = "usuario")
+    @Column
     private String usuario;
 
     private Boolean accountNonLocked = true;
 
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(	name = "user_roles",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "role_id"))
+    @Transient
+    @ToString.Exclude
     private Set<TipoUsuario> tipoUsuario = new HashSet<>();
 
     public Usuario(String usuario, String email, String senha) {

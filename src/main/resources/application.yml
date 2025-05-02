@@ -14,21 +14,17 @@ spring:
       matching-strategy: ant_path_matcher
     async:
       request-timeout: 300000 # 5 minutos em milissegundos
-  jpa:
-    properties:
-      hibernate:
-        jdbc:
-          lob:
-            non_contextual_creation: true
-        dialect: org.hibernate.dialect.PostgreSQLDialect
-    hibernate:
-      ddl-auto: update
-  datasource:
-    initialization-mode: always
-    platform: postgres
-    url: jdbc:postgresql://localhost:9099/Seekernaut # URL padrão - pode ser sobrescrita nos profiles
-    username: postgresql # Usuário padrão - pode ser sobrescrito nos profiles
-    password: postgresql # Senha padrão - pode ser sobrescrita nos profiles
+  r2dbc:
+    url: r2dbc:postgresql://localhost:9099/Seekernaut
+    username: postgresql
+    password: postgresql
+    pool:
+      max-idle-time: PT30S
+      max-life-time: PT1H
+      max-acquire-time: PT10S
+      max-create-connection-time: PT5S
+      initial-size: 5
+      max-size: 20
   data:
     mongodb:
       uri: "mongodb://localhost:27017/seekernaut_logs" # URI padrão - pode ser sobrescrita nos profiles
