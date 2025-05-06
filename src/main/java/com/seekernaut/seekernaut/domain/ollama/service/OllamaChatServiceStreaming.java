@@ -3,12 +3,16 @@ package com.seekernaut.seekernaut.domain.ollama.service;
 import com.seekernaut.seekernaut.api.ollamastreaming.dto.MessageDto;
 import com.seekernaut.seekernaut.api.ollamastreaming.dto.OllamaChatRequestDto;
 import com.seekernaut.seekernaut.api.ollamastreaming.dto.OllamaChatResponseDto;
+import com.seekernaut.seekernaut.api.usuario.dto.UsuarioDTO;
+import com.seekernaut.seekernaut.api.usuario.dto.UsuarioFilterDto;
 import com.seekernaut.seekernaut.client.ollama.webclient.OllamaChatApiClient;
 import com.seekernaut.seekernaut.domain.conversations.model.Conversation;
 import com.seekernaut.seekernaut.domain.conversations.repository.ConversationRepository;
 import com.seekernaut.seekernaut.domain.messages.model.Message;
 import com.seekernaut.seekernaut.domain.messages.repository.MessageRepository;
 import com.seekernaut.seekernaut.domain.user.model.Usuario;
+import com.seekernaut.seekernaut.response.DefaultPaginationResponse;
+import com.seekernaut.seekernaut.response.DefaultRequestParams;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -206,5 +210,38 @@ public class OllamaChatServiceStreaming {
 
     public Flux<Message> chatHistory(UUID conversationId) {
         return messageRepository.findByConversationIdOrderBySentAt(conversationId);
+    }
+
+    public Flux<Conversation> conversationList(Long userId) {
+        return conversationRepository.findByUserId(userId);
+    }
+
+    public Mono<DefaultPaginationResponse<Conversation>> findAllReactive(DefaultRequestParams request, Long userId) {
+        log.debug("into findAllReactive method");
+
+        int pageNumber = request.getPageNumber();
+        int pageSize = request.getPageSize();
+        long offset = (long) pageNumber * pageSize;
+
+        Flux<Conversation> usuariosFlux = conversationRepository.findAllWithFiltersAndPagination(
+                userId,
+                pageSize,
+                offset
+        );
+
+        Mono<Long> totalRecordsMono = conversationRepository.countAllWithFilters(
+                userId
+        );
+
+        return Mono.zip(usuariosFlux.collectList(), totalRecordsMono)
+                .map(tuple -> {
+                    return DefaultPaginationResponse.<Conversation>builder()
+                            .pageNumber(pageNumber)
+                            .totalPages((int) Math.ceil((double) tuple.getT2() / pageSize))
+                            .totalRecords(tuple.getT2())
+                            .pageSize(tuple.getT1().size())
+                            .records(tuple.getT1())
+                            .build();
+                });
     }
 }

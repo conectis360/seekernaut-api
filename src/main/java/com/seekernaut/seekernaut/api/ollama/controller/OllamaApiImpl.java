@@ -4,14 +4,18 @@ package com.seekernaut.seekernaut.api.ollama.controller;
 import com.seekernaut.seekernaut.api.ollama.dto.ModelListDto;
 import com.seekernaut.seekernaut.api.ollama.dto.OllamaGenerateRequestDto;
 import com.seekernaut.seekernaut.api.ollama.dto.OllamaGenerateResponseDto;
+import com.seekernaut.seekernaut.api.ollama.dto.OllamaModelInfoDTO;
 import com.seekernaut.seekernaut.api.ollamastreaming.dto.OllamaChatRequestDto;
 import com.seekernaut.seekernaut.api.ollamastreaming.dto.OllamaChatResponseDto;
 import com.seekernaut.seekernaut.components.Messages;
+import com.seekernaut.seekernaut.domain.conversations.model.Conversation;
 import com.seekernaut.seekernaut.domain.messages.model.Message;
 import com.seekernaut.seekernaut.domain.ollama.service.OllamaChatServiceStreaming;
 import com.seekernaut.seekernaut.domain.ollama.service.OllamaService;
 import com.seekernaut.seekernaut.domain.user.model.Usuario;
 import com.seekernaut.seekernaut.domain.user.service.UsuarioService;
+import com.seekernaut.seekernaut.response.DefaultPaginationResponse;
+import com.seekernaut.seekernaut.response.DefaultRequestParams;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.RestController;
@@ -26,12 +30,11 @@ import java.util.UUID;
 public class OllamaApiImpl implements OllamaApi {
 
     private final OllamaService ollamaService;
-    private final Messages messages;
     private final UsuarioService usuarioService;
     private final OllamaChatServiceStreaming ollamaChatServiceStreaming;
 
     @Override
-    public ModelListDto listModels() {
+    public Mono<ModelListDto> listModels() {
         return ollamaService.listModels();
     }
 
@@ -53,6 +56,11 @@ public class OllamaApiImpl implements OllamaApi {
     @Override
     public Flux<Message> chatHistory(UUID conversationId) {
         return ollamaChatServiceStreaming.chatHistory(conversationId);
+    }
+
+    @Override
+    public Mono<DefaultPaginationResponse<Conversation>> conversationList(DefaultRequestParams requestParams, Long userId) {
+        return ollamaChatServiceStreaming.findAllReactive(requestParams,userId);
     }
 
 }

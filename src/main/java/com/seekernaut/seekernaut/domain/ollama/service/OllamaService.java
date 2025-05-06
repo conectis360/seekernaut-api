@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.seekernaut.seekernaut.api.ollama.dto.ModelListDto;
 import com.seekernaut.seekernaut.api.ollama.dto.OllamaGenerateRequestDto;
 import com.seekernaut.seekernaut.api.ollama.dto.OllamaGenerateResponseDto;
+import com.seekernaut.seekernaut.api.ollama.dto.OllamaModelInfoDTO;
 import com.seekernaut.seekernaut.client.ollama.feign.api.OllamaClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -53,8 +54,11 @@ public class OllamaService {
      *
      * @return {@link ModelListDto} contendo a lista de modelos.
      */
-    public ModelListDto listModels() {
-        return ollamaClient.listModels();
+    public Mono<ModelListDto> listModels() {
+        return ollamaWebClient.get()
+                .uri("/tags")
+                .retrieve()
+                .bodyToMono(ModelListDto.class);
     }
 
     /**

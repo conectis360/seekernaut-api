@@ -3,12 +3,19 @@ package com.seekernaut.seekernaut.api.ollama.controller;
 import com.seekernaut.seekernaut.api.ollama.dto.ModelListDto;
 import com.seekernaut.seekernaut.api.ollama.dto.OllamaGenerateRequestDto;
 import com.seekernaut.seekernaut.api.ollama.dto.OllamaGenerateResponseDto;
+import com.seekernaut.seekernaut.api.ollama.dto.OllamaModelInfoDTO;
 import com.seekernaut.seekernaut.api.ollamastreaming.dto.ConversationStartResponse;
 import com.seekernaut.seekernaut.api.ollamastreaming.dto.OllamaChatRequestDto;
 import com.seekernaut.seekernaut.api.ollamastreaming.dto.OllamaChatResponseDto;
+import com.seekernaut.seekernaut.api.usuario.dto.UsuarioDTO;
+import com.seekernaut.seekernaut.api.usuario.dto.UsuarioFilterDto;
+import com.seekernaut.seekernaut.domain.conversations.model.Conversation;
 import com.seekernaut.seekernaut.domain.messages.model.Message;
+import com.seekernaut.seekernaut.response.DefaultPaginationResponse;
+import com.seekernaut.seekernaut.response.DefaultRequestParams;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -26,7 +33,7 @@ public interface OllamaApi {
     @Operation(summary = "Find models", description = "Find existing models")
     @ResponseStatus(HttpStatus.CREATED)
     @GetMapping(value = "/findModels", produces = {MediaType.APPLICATION_JSON_VALUE})
-    ModelListDto listModels();
+    Mono<ModelListDto> listModels();
 
     @Operation(summary = "Generate Completion", description = "Send a prompt to the specified model and return the answer ")
     @ResponseStatus(HttpStatus.OK)
@@ -46,7 +53,15 @@ public interface OllamaApi {
 
     @Operation(summary = "Get Chat history", description = "Get all messages by conversationId")
     @ResponseStatus(HttpStatus.OK)
-    @PreAuthorize("hasRole('TEST')")
+    @PreAuthorize("hasRole('USER')")
     @GetMapping(value = "/conversations/{conversationId}/chat", produces = MediaType.APPLICATION_JSON_VALUE)
     Flux<Message> chatHistory(@PathVariable UUID conversationId);
+
+    @Operation(summary = "Get Chat history", description = "Get all messages by conversationId")
+    @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasRole('USER')")
+    @GetMapping(value = "/{userId}/conversations", produces = MediaType.APPLICATION_JSON_VALUE)
+    Mono<DefaultPaginationResponse<Conversation>> conversationList(@ParameterObject DefaultRequestParams requestParams,
+                                                                   @ParameterObject Long userId);
+
 }
