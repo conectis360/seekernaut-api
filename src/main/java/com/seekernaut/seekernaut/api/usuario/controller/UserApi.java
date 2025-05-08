@@ -2,6 +2,7 @@ package com.seekernaut.seekernaut.api.usuario.controller;
 
 import com.seekernaut.seekernaut.api.usuario.dto.UsuarioDTO;
 import com.seekernaut.seekernaut.api.usuario.dto.UsuarioFilterDto;
+import com.seekernaut.seekernaut.domain.user.model.Usuario;
 import com.seekernaut.seekernaut.response.DefaultPaginationResponse;
 import com.seekernaut.seekernaut.response.DefaultRequestParams;
 import io.swagger.v3.oas.annotations.Operation;
@@ -26,8 +27,8 @@ public interface UserApi {
 
     @Operation(summary = "Listar usuario por id", description = "Listar usuario por id")
     @ResponseStatus(HttpStatus.OK)
-    @GetMapping(value = "/{usuarioId}", produces = {MediaType.APPLICATION_JSON_VALUE})
-    UsuarioDTO findById(@PathVariable Long usuarioId);
+    @GetMapping(value = "/{userId}", produces = {MediaType.APPLICATION_JSON_VALUE})
+    Mono<UsuarioDTO> findById(@PathVariable Long userId);
 
     @Operation(summary = "Inserir novo usuario", description = "Inserir novo usuario")
     @ResponseStatus(HttpStatus.CREATED)

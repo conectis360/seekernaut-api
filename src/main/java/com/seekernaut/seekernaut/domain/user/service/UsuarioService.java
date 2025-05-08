@@ -102,6 +102,10 @@ public class UsuarioService {
         return usuarioRepository.findByUsuario(username);
     }
 
+    public Mono<Usuario> findById(Long userId) {
+        return usuarioRepository.findById(userId);
+    }
+
     public Mono<List<String>> buscarRolesPorUsername(String username) {
         log.debug("into buscarRolesPorUsername method");
         return usuarioRepository.findByUsuario(username)

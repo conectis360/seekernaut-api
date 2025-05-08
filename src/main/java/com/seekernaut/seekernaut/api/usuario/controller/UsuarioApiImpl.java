@@ -27,9 +27,10 @@ public class UsuarioApiImpl implements UserApi {
     }
 
     @Override
-    public UsuarioDTO findById(Long statusId) {
+    public Mono<UsuarioDTO> findById(Long userId) {
         log.debug("into findById method");
-        return null;
+        Mono<Usuario> usuarioMono = usuarioService.findById(userId);
+        return usuarioMono.map(usuarioMapper::toDto);
     }
 
     public Mono<UsuarioDTO> insert(UsuarioDTO usuarioDTO) {
