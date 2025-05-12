@@ -1,5 +1,7 @@
 package com.seekernaut.seekernaut.security;
 
+import com.seekernaut.seekernaut.domain.token.model.RefreshToken;
+import com.seekernaut.seekernaut.domain.token.service.RefreshTokenService;
 import com.seekernaut.seekernaut.domain.user.model.User;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
@@ -11,12 +13,15 @@ import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
+import java.time.Instant;
 import java.util.Date;
+import java.util.UUID;
 
 /**
  * Componente utilitário para geração e validação de tokens JWT (JSON Web Tokens) para autenticação.
@@ -25,6 +30,9 @@ import java.util.Date;
 public class JwtUtils {
 
     private static final Logger logger = LoggerFactory.getLogger(JwtUtils.class);
+
+    @Autowired
+    private RefreshTokenService refreshTokenService;
 
     /**
      * Segredo usado para assinar e verificar a assinatura dos tokens JWT.
@@ -39,6 +47,9 @@ public class JwtUtils {
      */
     @Value("${seekernaut.app.jwtExpirationMs}")
     private long jwtExpirationMs;
+
+    @Value("${seekernaut.app.jwtRefreshTokenExpirationDays}")
+    private long jwtRefreshTokenExpirationDays;
 
     /**
      * Gera uma chave de assinatura {@link Key} a partir do {@link #jwtSecret}.
@@ -68,6 +79,21 @@ public class JwtUtils {
                 .setExpiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
                 .signWith(getSignInKey(), SignatureAlgorithm.HS512)
                 .compact();
+    }
+
+    public String generateRefreshToken(Authentication authentication) {
+        User userPrincipal = (User) authentication.getPrincipal();
+        String refreshTokenValue = UUID.randomUUID().toString();
+        Instant expiryDate = Instant.now().plusSeconds(jwtRefreshTokenExpirationDays * 24 * 60 * 60);
+
+        RefreshToken refreshToken = new RefreshToken();
+        refreshToken.setUserId(userPrincipal.getId()); // Assuming User has an getId() method
+        refreshToken.setToken(refreshTokenValue);
+        refreshToken.setExpiryDate(expiryDate);
+
+        refreshTokenService.saveRefreshToken(refreshToken).subscribe(); // Save asynchronously
+
+        return refreshTokenValue;
     }
 
     /**
