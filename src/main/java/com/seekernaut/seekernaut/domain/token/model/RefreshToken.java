@@ -5,7 +5,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
-import java.sql.Timestamp;
+import java.time.Instant;
 
 /**
  * <p>Entidade R2DBC que representa token refresh.</p>
@@ -25,11 +25,11 @@ public class RefreshToken {
     private Long tokenId;
 
     @Column("userId")
-    private String userId;
+    private Long userId;
 
     @Column("token")
     private String token;
 
     @Column("expiryDate")
-    private Timestamp expiryDate;
+    private Instant expiryDate;
 }
