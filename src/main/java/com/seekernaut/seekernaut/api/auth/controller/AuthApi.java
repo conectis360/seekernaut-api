@@ -1,10 +1,12 @@
 package com.seekernaut.seekernaut.api.auth.controller;
 
 import com.seekernaut.seekernaut.api.auth.dto.LoginDTO;
+import com.seekernaut.seekernaut.api.auth.dto.RefreshTokenRequest;
 import com.seekernaut.seekernaut.api.usuario.dto.UsuarioDTO;
 import com.seekernaut.seekernaut.api.usuario.dto.UsuarioFilterDto;
 import com.seekernaut.seekernaut.response.DefaultPaginationResponse;
 import com.seekernaut.seekernaut.response.DefaultRequestParams;
+import com.seekernaut.seekernaut.response.JwtResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springdoc.core.annotations.ParameterObject;
@@ -19,9 +21,13 @@ import reactor.core.publisher.Mono;
 @RequestMapping("/v1/auth")
 public interface AuthApi {
 
-    @Operation(summary = "Inserir novo usuario", description = "Inserir novo usuario")
-    @ResponseStatus(HttpStatus.CREATED)
+    @Operation(summary = "Fazer login", description = "Realiza login de um usuário")
+    @ResponseStatus(HttpStatus.OK)
     @PostMapping(value = "/login", consumes = {MediaType.APPLICATION_JSON_VALUE}, produces = {MediaType.APPLICATION_JSON_VALUE})
     Mono<ResponseEntity<?>> login(@RequestBody @Validated LoginDTO loginDTO);
 
+    @Operation(summary = "Obter novo token de acesso", description = "Obter um novo token de acesso usando um refresh token válido")
+    @ResponseStatus(HttpStatus.OK)
+    @PostMapping(value = "/refresh", consumes = {MediaType.APPLICATION_JSON_VALUE}, produces = {MediaType.APPLICATION_JSON_VALUE})
+    Mono<ResponseEntity<?>> refreshToken(@RequestBody @Validated RefreshTokenRequest request);
 }

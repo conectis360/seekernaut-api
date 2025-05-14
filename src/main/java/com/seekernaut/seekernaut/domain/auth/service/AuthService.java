@@ -2,6 +2,8 @@ package com.seekernaut.seekernaut.domain.auth.service;
 
 import com.seekernaut.seekernaut.api.auth.dto.LoginDTO;
 import com.seekernaut.seekernaut.components.Messages;
+import com.seekernaut.seekernaut.domain.token.model.RefreshToken;
+import com.seekernaut.seekernaut.domain.token.service.RefreshTokenService;
 import com.seekernaut.seekernaut.domain.user.model.User;
 import com.seekernaut.seekernaut.domain.user.service.UsuarioService;
 import com.seekernaut.seekernaut.exception.BusinessException;
@@ -13,10 +15,12 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.ReactiveAuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -28,6 +32,7 @@ public class AuthService {
     private final UsuarioService usuarioServiceReactive;
     private final JwtUtils jwtUtils;
     private final Messages messages;
+    private final RefreshTokenService refreshTokenService;
 
     private Mono<Authentication> autenticaUsuario(String username, String password) {
         return authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password))
@@ -65,5 +70,44 @@ public class AuthService {
                         return token;
                     });
         });
+    }
+
+    public Mono<?> gerarNovoAccessToken(String refreshToken) {
+        return refreshTokenService.findByToken(refreshToken)
+                .flatMap(token -> {
+                    if (token.getExpiryDate().isBefore(Instant.now())) {
+                        return refreshTokenService.deleteByToken(refreshToken)
+                                .then(Mono.error(new RuntimeException("Refresh token expirado")));
+                    }
+
+                    return usuarioServiceReactive.findById(token.getUserId())
+                            .flatMap(user -> usuarioServiceReactive.buscarRolesPorUsername(user.getUsuario())
+                                    .map(roles -> {
+                                        List<SimpleGrantedAuthority> authorities = roles.stream()
+                                                .map(SimpleGrantedAuthority::new)
+                                                .collect(Collectors.toList());
+
+                                        Authentication authentication = new UsernamePasswordAuthenticationToken(user, null, authorities);
+                                        String newAccessToken = jwtUtils.generateJwtToken(authentication);
+                                        String newRefreshToken = jwtUtils.generateRefreshToken(authentication);
+
+                                        // Invalida o refresh token antigo e salva o novo
+                                        return refreshTokenService.deleteByToken(refreshToken)
+                                                .then(refreshTokenService.saveRefreshToken(RefreshToken.builder()
+                                                        .userId(user.getId())
+                                                        .token(newRefreshToken)
+                                                        .expiryDate(Instant.now().plusSeconds(7 * 24 * 60 * 60))
+                                                        .build()))
+                                                .thenReturn(JwtResponse.builder()
+                                                        .token(newAccessToken)
+                                                        .refreshToken(newRefreshToken)
+                                                        .id(user.getId())
+                                                        .username(user.getUsuario())
+                                                        .email(user.getEmail())
+                                                        .roles(roles) // Mantemos a lista de strings no DTO para a resposta
+                                                        .nome(user.getNome())
+                                                        .build());
+                                    }));
+                });
     }
 }

@@ -61,6 +61,7 @@ public class WebFluxSecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource())) // Use o CorsConfigurationSource bean
                 .authorizeExchange(exchange -> exchange
                         .pathMatchers("/v1/auth/login").permitAll()
+                        .pathMatchers("/v1/auth/refresh").permitAll()
                         .pathMatchers(HttpMethod.OPTIONS).permitAll() // Permita OPTIONS para preflight
                         .anyExchange().authenticated()
                 )

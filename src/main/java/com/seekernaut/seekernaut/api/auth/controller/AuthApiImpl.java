@@ -2,6 +2,7 @@ package com.seekernaut.seekernaut.api.auth.controller;
 
 
 import com.seekernaut.seekernaut.api.auth.dto.LoginDTO;
+import com.seekernaut.seekernaut.api.auth.dto.RefreshTokenRequest;
 import com.seekernaut.seekernaut.domain.auth.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,6 +20,12 @@ public class AuthApiImpl implements AuthApi {
     @Override
     public Mono<ResponseEntity<?>> login(LoginDTO loginDTO) {
         return authService.fazLoginReativo(loginDTO)
+                .map(token -> ResponseEntity.ok(token));
+    }
+
+    @Override
+    public Mono<ResponseEntity<?>> refreshToken(RefreshTokenRequest request) {
+        return authService.gerarNovoAccessToken(request.getRefreshToken())
                 .map(token -> ResponseEntity.ok(token));
     }
 
