@@ -15,7 +15,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
-@Tag(name = "Status")
+@Tag(name = "Authentication")
 @RequestMapping("/v1/auth")
 public interface AuthApi {
 

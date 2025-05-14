@@ -47,19 +47,21 @@ public class AuthService {
         return authenticationMono.flatMap(autenticado -> {
             SecurityContextHolder.getContext().setAuthentication(autenticado);
             String jwt = jwtUtils.generateJwtToken(autenticado);
+            String refreshToken = jwtUtils.generateRefreshToken(autenticado);
             User userDetails = (User) autenticado.getPrincipal();
 
             // Busca as roles do usuário de forma reativa usando o serviço de usuários
             return usuarioServiceReactive.buscarRolesPorUsername(userDetails.getUsername())
                     .map(roles -> {
-                        JwtResponse token = new JwtResponse(
-                                jwt,
-                                userDetails.getId(),
-                                userDetails.getUsername(),
-                                userDetails.getEmail(),
-                                roles,
-                                userDetails.getNome()
-                        );
+                        JwtResponse token = JwtResponse.builder()
+                                .token(jwt)
+                                .id(userDetails.getId())
+                                .username(userDetails.getUsername())
+                                .email(userDetails.getEmail())
+                                .roles(roles)
+                                .nome(userDetails.getNome())
+                                .refreshToken(refreshToken)
+                                .build();
                         return token;
                     });
         });
