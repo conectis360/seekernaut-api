@@ -120,6 +120,19 @@ public class JwtUtils {
      * @return {@code true} se o token for válido, {@code false} caso contrário.
      */
     public boolean validateJwtToken(String authToken) {
+        // Verifica se o token é nulo ou vazio
+        if (authToken == null || authToken.isEmpty()) {
+            logger.error("Token JWT é nulo ou vazio.");
+            return false;
+        }
+
+        // Divide o token em partes e verifica a estrutura
+        String[] tokenParts = authToken.split("\\.");
+        if (tokenParts.length != 3) {
+            logger.error("Token JWT inválido. Número de partes esperado: 3, encontrado: {}", tokenParts.length);
+            return false;
+        }
+
         try {
             Jwts.parser() // Use Jwts.parser() para versões mais antigas
                     .setSigningKey(getSignInKey())

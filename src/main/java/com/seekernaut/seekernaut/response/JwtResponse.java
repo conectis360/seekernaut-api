@@ -12,7 +12,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class JwtResponse {
-    private String token;
+    private String accessToken;
     private String type = "Bearer";
     private Long id;
     private String username;

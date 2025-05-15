@@ -31,7 +31,7 @@ import java.util.UUID;
 public interface OllamaApi {
 
     @Operation(summary = "Find models", description = "Find existing models")
-    @ResponseStatus(HttpStatus.CREATED)
+    @ResponseStatus(HttpStatus.OK)
     @GetMapping(value = "/findModels", produces = {MediaType.APPLICATION_JSON_VALUE})
     Mono<ModelListDto> listModels();
 

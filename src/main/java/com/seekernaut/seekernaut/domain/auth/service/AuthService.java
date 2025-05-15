@@ -59,7 +59,7 @@ public class AuthService {
             return usuarioServiceReactive.buscarRolesPorUsername(userDetails.getUsername())
                     .map(roles -> {
                         JwtResponse token = JwtResponse.builder()
-                                .token(jwt)
+                                .accessToken(jwt)
                                 .id(userDetails.getId())
                                 .username(userDetails.getUsername())
                                 .email(userDetails.getEmail())
@@ -99,7 +99,7 @@ public class AuthService {
                                                         .expiryDate(Instant.now().plusSeconds(7 * 24 * 60 * 60))
                                                         .build()))
                                                 .thenReturn(JwtResponse.builder()
-                                                        .token(newAccessToken)
+                                                        .accessToken(newAccessToken)
                                                         .refreshToken(newRefreshToken)
                                                         .id(user.getId())
                                                         .username(user.getUsuario())
