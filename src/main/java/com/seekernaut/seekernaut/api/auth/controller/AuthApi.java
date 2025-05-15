@@ -30,4 +30,9 @@ public interface AuthApi {
     @ResponseStatus(HttpStatus.OK)
     @PostMapping(value = "/refresh", consumes = {MediaType.APPLICATION_JSON_VALUE}, produces = {MediaType.APPLICATION_JSON_VALUE})
     Mono<ResponseEntity<?>> refreshToken(@RequestBody @Validated RefreshTokenRequest request);
+
+    @Operation(summary = "Fazer logout", description = "Faz logout da aplicação")
+    @ResponseStatus(HttpStatus.OK)
+    @PostMapping(value = "/logout", consumes = {MediaType.APPLICATION_JSON_VALUE}, produces = {MediaType.APPLICATION_JSON_VALUE})
+    Mono<Void> logout(@RequestBody @Validated RefreshTokenRequest request);
 }

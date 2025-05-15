@@ -29,5 +29,10 @@ public class AuthApiImpl implements AuthApi {
                 .map(token -> ResponseEntity.ok(token));
     }
 
+    @Override
+    public Mono<Void> logout(RefreshTokenRequest request) {
+        return authService.logout(request.getRefreshToken());
+    }
+
 
 }

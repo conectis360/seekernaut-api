@@ -1,5 +1,6 @@
 package com.seekernaut.seekernaut.domain.auth.service;
 
+import com.nimbusds.openid.connect.sdk.LogoutRequest;
 import com.seekernaut.seekernaut.api.auth.dto.LoginDTO;
 import com.seekernaut.seekernaut.components.Messages;
 import com.seekernaut.seekernaut.domain.token.model.RefreshToken;
@@ -11,6 +12,7 @@ import com.seekernaut.seekernaut.response.JwtResponse;
 import com.seekernaut.seekernaut.security.JwtUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.ReactiveAuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -18,6 +20,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.server.ServerRequest;
+import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 
 import java.time.Instant;
@@ -108,6 +112,23 @@ public class AuthService {
                                                         .nome(user.getNome())
                                                         .build());
                                     }));
+                });
+    }
+
+    public Mono<Void> logout(String refreshToken) {
+        return refreshTokenService.findByToken(refreshToken)
+                .flatMap(token -> {
+                    if (token.getExpiryDate().isBefore(Instant.now())) {
+                        // Token já expirado - deleta e retorna sucesso
+                        return refreshTokenService.deleteByToken(refreshToken);
+                    }
+                    // Token válido - invalida
+                    return refreshTokenService.deleteByToken(refreshToken);
+                })
+                .then()
+                .onErrorResume(e -> {
+                    // Log de erro opcional
+                    return Mono.empty();
                 });
     }
 }
